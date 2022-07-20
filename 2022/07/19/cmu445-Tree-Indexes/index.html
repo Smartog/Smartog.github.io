@@ -1,0 +1,282 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>cmu445-6 Tree Indexes | 扶摇之鹏</title><meta name="keywords" content="database system"><meta name="author" content="Smartog,2369398685@qq.com"><meta name="copyright" content="Smartog"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="Indexestable index是数据columns子集的复制，允许DBMS可以比顺序扫描更快的查找tuple。DBMS保证数据表的内容和索引内容同步。对于指定查询，选择哪一种索引以使得查询执行的更快是DBMS来完成的。建立索引需要额外的存储开销，也需要维护，所以每个数据库创建的索引数量需要trade-off。 B+Tree定义：  自平衡，每个叶子节点所处高度一致  除叶子节点外每个节点至少">
+<meta property="og:type" content="article">
+<meta property="og:title" content="cmu445-6 Tree Indexes">
+<meta property="og:url" content="http://example.com/2022/07/19/cmu445-Tree-Indexes/index.html">
+<meta property="og:site_name" content="扶摇之鹏">
+<meta property="og:description" content="Indexestable index是数据columns子集的复制，允许DBMS可以比顺序扫描更快的查找tuple。DBMS保证数据表的内容和索引内容同步。对于指定查询，选择哪一种索引以使得查询执行的更快是DBMS来完成的。建立索引需要额外的存储开销，也需要维护，所以每个数据库创建的索引数量需要trade-off。 B+Tree定义：  自平衡，每个叶子节点所处高度一致  除叶子节点外每个节点至少">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png">
+<meta property="article:published_time" content="2022-07-19T07:41:38.000Z">
+<meta property="article:modified_time" content="2022-07-20T14:48:53.455Z">
+<meta property="article:author" content="Smartog">
+<meta property="article:tag" content="database system">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2022/07/19/cmu445-Tree-Indexes/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/pluginsSrc/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="/pluginsSrc/@fancyapps/ui/dist/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'mediumZoom',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: '/pluginsSrc/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: '/pluginsSrc/flickr-justified-gallery/dist/fjGallery.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'cmu445-6 Tree Indexes',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-07-20 22:48:53'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.2.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://img-blog.csdnimg.cn/63447a11067346dba31054a8381d2b63.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">27</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">15</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">扶摇之鹏</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">cmu445-6 Tree Indexes</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-07-19T07:41:38.000Z" title="发表于 2022-07-19 15:41:38">2022-07-19</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-07-20T14:48:53.455Z" title="更新于 2022-07-20 22:48:53">2022-07-20</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/cmu-15-445/">cmu 15-445</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="cmu445-6 Tree Indexes"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div><article class="post-content" id="article-container"><h3 id="Indexes"><a href="#Indexes" class="headerlink" title="Indexes"></a>Indexes</h3><p>table index是数据columns子集的复制，允许DBMS可以比顺序扫描更快的查找tuple。DBMS保证数据表的内容和索引内容同步。对于指定查询，选择哪一种索引以使得查询执行的更快是DBMS来完成的。建立索引需要额外的存储开销，也需要维护，所以每个数据库创建的索引数量需要trade-off。</p>
+<h3 id="B-Tree"><a href="#B-Tree" class="headerlink" title="B+Tree"></a>B+Tree</h3><p><strong>定义：</strong></p>
+<ul>
+<li><p>自平衡，每个叶子节点所处高度一致</p>
+</li>
+<li><p>除叶子节点外每个节点至少满足:<script type="math/tex">\frac{M}{2} − 1 <= num\ of\ keys <= M − 1</script></p>
+</li>
+<li><p>每个具有k个关键字的内部节点都具有k+1个孩子</p>
+</li>
+</ul>
+<p><strong>B+树中的每个节点都包含一个键/值对的数组：</strong></p>
+<ul>
+<li>每个节点上的数组（几乎）都是按键进行排序的</li>
+<li>内部节点的值数组将包含指向其他节点的指针</li>
+<li>对于叶子节点指向的具体的值value，有两种处理方式：<ul>
+<li><strong>Record IDs:</strong> 保存一个指向tuple地址的指针</li>
+<li><strong>Tuple Data:</strong> tuple的真实内容在叶子节点中排序存放</li>
+</ul>
+</li>
+</ul>
+<p>B+树的插入删除操作网上资料很丰富，<a target="_blank" rel="noopener" href="https://www.cs.usfca.edu/~galles/visualization/BPlusTree.html该网站可以动画模拟B+树的操作">https://www.cs.usfca.edu/~galles/visualization/BPlusTree.html该网站可以动画模拟B+树的操作</a></p>
+<h3 id="B-Tree-Design-Decisions"><a href="#B-Tree-Design-Decisions" class="headerlink" title="B+Tree Design Decisions"></a>B+Tree Design Decisions</h3><h4 id="节点大小："><a href="#节点大小：" class="headerlink" title="节点大小："></a><strong>节点大小：</strong></h4><ul>
+<li>B个+树的最佳节点大小取决于磁盘的速度。其想法是将尽可能多的将键/值对从磁盘读取节点到内存以摊销成本</li>
+<li>磁盘越慢，节点大小应该越大</li>
+<li>相对于大量点查询，有些工作负载可能更偏向于scan操作</li>
+</ul>
+<h4 id="合并策略："><a href="#合并策略：" class="headerlink" title="合并策略："></a><strong>合并策略：</strong></h4><ul>
+<li>有些DBMS在节点处于half full的情况下并不会合并节点</li>
+<li>延迟节点合并可能会减少数据重新组织的次数</li>
+<li>允许某些节点处于underflow状态然后周期性地重建整棵树可能有利于DBMS</li>
+</ul>
+<h4 id="可变长度的键："><a href="#可变长度的键：" class="headerlink" title="可变长度的键："></a><strong>可变长度的键：</strong></h4><p>常见的方法是使用<strong>Key Map</strong>，在节点内部嵌入一个指向key+value列表的指针。和之前讨论的slotted page类似。</p>
+<h4 id="非唯一性索引："><a href="#非唯一性索引：" class="headerlink" title="非唯一性索引："></a><strong>非唯一性索引：</strong></h4><ul>
+<li><p>使用Duplicate Keys：将key替换为key+RecordId，RecordId=pageId+offset of slot。因为物理位置互不相同，相同的key也能够比较大小了。缺点是需要保存的东西更多了，需要消耗更多空间存储索引。</p>
+<p><img src="https://pic3.zhimg.com/80/v2-dd05cb5e2d87514c9c2b57144c7680de_720w.jpg" alt="img" style="zoom:67%;" /></p>
+</li>
+<li><p>使用Value Lists：</p>
+<p>简单地扩展叶子结点，将相同的key存储进溢出区中。缺点是这会打破B+树的平衡限制，使结点内的key由有序变为无序，查找时找到了叶子结点也要线性扫描所有该结点下挂着的溢出区。比如要查找的key为6，那么找到第二层后需要依次扫描6-&gt;7-&gt;8-&gt;6-&gt;7-&gt;6，才能不遗漏。</p>
+<p><img src="https://pic2.zhimg.com/80/v2-78f53b983cb3348b974d5032539cfd41_720w.jpg" alt="img" style="zoom:67%;" /></p>
+</li>
+</ul>
+<h4 id="节点内搜索策略："><a href="#节点内搜索策略：" class="headerlink" title="节点内搜索策略："></a><strong>节点内搜索策略：</strong></h4><ul>
+<li><strong>线性搜索：</strong>从头到尾扫描节点中的 键/值 条目。当你找到你要找的 key 时，停下来。这不需要对键/值条目进行预排序。</li>
+<li><strong>二分搜索：</strong>跳到中间 key，然后根据中间关键字小于还是大于搜索关键字向左/向右旋转。这需要对键/值条目进行<strong>预排序</strong>。</li>
+<li><strong>插值 Interpolation：</strong>根据节点中已知的 低/高 关键字值，<strong>近似计算搜索关键字的起始位置</strong>。然后从该位置执行线性扫描。这需要对键/值条目进行<strong>预排序</strong>。</li>
+</ul>
+<h3 id="B-Tree-Optimizations"><a href="#B-Tree-Optimizations" class="headerlink" title="B+Tree Optimizations"></a>B+Tree Optimizations</h3><ul>
+<li><p><strong>prefix compression 前缀压缩</strong></p>
+<p>因为key都是排好序的，所以可能会出现大量重复的前缀。记录它们的公共前缀而不是重复地存储完整的key，会节省大量的存储空间。</p>
+<p><img src="https://pic4.zhimg.com/80/v2-53dcc75f832a5cdea97068c5c5b8a83b_720w.jpg" alt="img" style="zoom:67%;" /></p>
+</li>
+<li><p><strong>suffix truncation 后缀截断</strong></p>
+<p>当用于确认方向的路标很长，但是迥然不同时，也没有必要存完整的key，abcdefg…存储为abc，lmnopq…存储为lmn即可。这种方式在树不会经常改变时很有用，总体上用的比前缀压缩要少。</p>
+<p><img src="https://pic3.zhimg.com/80/v2-fcba7c597b5747b1d84a346376bd76ee_720w.jpg" alt="img" style="zoom:67%;" /></p>
+<p><img src="https://pic1.zhimg.com/80/v2-a7eebe09dadadb9d437c97375ccc6de4_720w.jpg" alt="img" style="zoom:67%;" /></p>
+</li>
+<li><p><strong>Bulk Inserts：</strong>当提前知道需要插入的所有key时，可以预先对key们排序，然后自下而上地构建整颗树，这样比逐次插入快很多。</p>
+<p><img src="https://pic1.zhimg.com/80/v2-47a67231b32bf8e4106dd05262d6efb0_720w.jpg" alt="img" style="zoom:67%;" /></p>
+</li>
+<li><p><strong>pointer swizzling</strong></p>
+<p>当确保需要遍历的结点所在的page都被pin在buffer pool中时，结点间指针就不用再(仅)存page id，而是可以直接(额外)存原始指针，遍历这些node时就能避免去访问buffer pool的时延。这个技术 (<a href="https://link.zhihu.com/?target=https%3A//en.wikipedia.org/wiki/Pointer_swizzling">Pointer swizzling - Wikipedia</a>) 的本意是由于持久化保存(链表等数据结构的)指针逻辑地址没有意义，因为把逻辑地址写到磁盘里，预计之后按原样拼起来，但是再读出来的时候逻辑地址就什么也不是了，所以保存下一个node的id而不是地址值充当指针的作用，这个操作叫unswizzling。在数据库中反其道而行之，如果DBMS确保都会在内存里操作，就可以专门存地址的原始值而不是page id。因为树的高层结点使用频率非常高，它们pin在buffer pool里是常见的事情，这个技术使用场景比较多。</p>
+<p><img src="https://pic1.zhimg.com/80/v2-d87ad9486447afd38f9d95921ab57108_720w.jpg" alt="img" style="zoom:67%;" /></p>
+</li>
+</ul>
+<h3 id="Additional-Index-Usage"><a href="#Additional-Index-Usage" class="headerlink" title="Additional Index Usage"></a>Additional Index Usage</h3><p><strong>隐式索引（Implicit Indexes）</strong>：大多数DBMS会自动创建索引来实施<strong>完整性约束</strong>(例如，主键、唯一约束)。</p>
+<p><strong>部分索引（Partial Indexes）</strong>：在整个表的<strong>子集</strong>上创建索引，（<strong>where</strong>语句形成子集）。这可能会减少大小和维护开销。</p>
+<p><strong>覆盖索引（Covering Indexes）</strong>：处理查询所需的所有属性<strong>都在索引中可用</strong>，则DBMS<strong>不需要检索元组</strong>。DBMS只需根据索引中可用的数据即可完成整个查询。（即，索引的数据中就能满足本次查找，不需要再去检索元组了，无需回表操作）</p>
+<p><strong>索引包含列（Index Include Columns）</strong>：在索引中嵌入其他列以支持仅索引查询。</p>
+<p><strong>函数/表达式索引（Function/Expression Indexes）</strong>：将函数或表达式的输出存储为键，而不是原始值。DBMS的工作是识别哪些查询可以使用该索引。</p>
+<h3 id="Radix-Tree"><a href="#Radix-Tree" class="headerlink" title="Radix Tree"></a>Radix Tree</h3><p>一个 radix tree 是 <strong>Trie数据结构的变体</strong>。它使用 <em>key</em> 的 <strong><em>digital\</em> 表示</strong>来逐个检查<strong>前缀</strong>，而不是比较整个 key 。它与trie的不同之处在于，key 中的每个元素都没有一个节点，在<strong>key不同之前</strong>，<strong>节点被合并</strong>以表示最大的前缀。</p>
+<p><strong>Radix tree</strong> 的高度取决于 <strong>key 的长度</strong>，而不是像<strong>B+树</strong>那样取决于 <strong>key 的数量</strong>。指向叶节点的路径表示叶的关键字。并非所有属性类型都可以分解为基数树的二进制可比数字。</p>
+<p>对于长整型数据的映射，如何解决Hash冲突和Hash表大小的设计是一个很头疼的问题。</p>
+<p>radix树就是针对这种<strong>稀疏的长整型数据查找</strong>，能<strong>快速</strong>且<strong>节省空间</strong>地完成映射。借助于Radix树，我们可以实现对于长整型数据类型的路由。利用radix树可以根据一个长整型（比如一个长ID）快速查找到其对应的对象指针。这比用hash映射来的简单，也更节省空间，使用hash映射hash函数难以设计，不恰当的hash函数可能增大冲突，或浪费空间。</p>
+<p>Radix tree是一种<strong>多叉搜索树</strong>，树的<strong>叶子结点</strong>是实际的<strong>数据条目</strong>。每个结点有一个固定的、2^n指针指向子结点（每个指针称为槽slot，n为划分的基的大小）</p>
+<p>Trie树一般用于<strong>字符串到对象</strong>的映射，Radix树一般用于<strong>长整数到对象</strong>的映射。</p>
+<h3 id="Inverted-Indexes"><a href="#Inverted-Indexes" class="headerlink" title="Inverted Indexes"></a>Inverted Indexes</h3><p>倒排索引存储<strong>单词</strong>到目标属性中包含这些单词的<strong>记录</strong>的<strong>映射</strong>。在DBMS中，这些索引有时称为<strong>全文搜索索引</strong>。</p>
+<p>大多数主要的DBMS本身都支持倒排索引，但也有专门的DBMS，其中这是唯一可用的表索引数据结构。</p>
+<p>（理解：倒排索引，它可以进行<strong>关键字搜索</strong>，因为hash索引和B+树索引对这个的性能都不太好。关键字搜索，主要是怕key的容量非常大。因此可以通过将关键词单词映射到包含单词的一些记录中。）</p>
+<p><strong>查询类型：</strong></p>
+<ul>
+<li><strong>短语搜索</strong>：查找按给定顺序包含单词列表的记录。</li>
+<li><strong>邻近搜索</strong>：查找两个单词在彼此的单词内出现的记录。</li>
+<li><strong>通配符搜索</strong>：查找包含匹配某种模式(例如，正则表达式，like)的单词的记录。</li>
+</ul>
+<p><strong>设计决策：</strong></p>
+<ul>
+<li><strong>存储什么</strong>：索引需要至少存储每个记录中包含的单词(由标点符号分隔)。它还可以包括其他信息，例如词频、位置和其他元数据。</li>
+<li><strong>何时更新每次修改表时更新倒排索引既昂贵又慢</strong>。因此，大多数DBMS将维护辅助数据结构以“<strong>暂存</strong>”更新，然后<strong>批量更新索引</strong>。</li>
+</ul>
+<p>参考：</p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/488198336">https://zhuanlan.zhihu.com/p/488198336</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/524055093">https://zhuanlan.zhihu.com/p/524055093</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://example.com">Smartog</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2022/07/19/cmu445-Tree-Indexes/">http://example.com/2022/07/19/cmu445-Tree-Indexes/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">扶摇之鹏</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/database-system/">database system</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="/pluginsSrc/butterfly-extsrc/ShareJS/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="/pluginsSrc/butterfly-extsrc/ShareJS/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="https://img-blog.csdnimg.cn/9732abb7d2ec4ba09cba5cf29507e04f.jpeg" target="_blank"><img class="post-qr-code-img" src="https://img-blog.csdnimg.cn/9732abb7d2ec4ba09cba5cf29507e04f.jpeg" alt="微信"/></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="https://img-blog.csdnimg.cn/899038c3a02c4a14925da419444eb3a4.jpeg" target="_blank"><img class="post-qr-code-img" src="https://img-blog.csdnimg.cn/899038c3a02c4a14925da419444eb3a4.jpeg" alt="支付宝"/></a><div class="post-qr-code-desc">支付宝</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2022/07/18/cmu445-hash_table/"><img class="next-cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">cmu445-5 Hash Table</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2022/07/12/cmu445-1/" title="cmu 14-445 1 relational model"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg2.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-12</div><div class="title">cmu 14-445 1 relational model</div></div></a></div><div><a href="/2022/07/13/cmu445-2/" title="cmu14-445 2 Advanced SQL"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-13</div><div class="title">cmu14-445 2 Advanced SQL</div></div></a></div><div><a href="/2022/07/14/cmu445-3/" title="cmu15-445-3 Data Storage"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-14</div><div class="title">cmu15-445-3 Data Storage</div></div></a></div><div><a href="/2022/07/16/cmu445-4/" title="cmu445-4 Buffer Pools"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-16</div><div class="title">cmu445-4 Buffer Pools</div></div></a></div><div><a href="/2022/07/18/cmu445-hash_table/" title="cmu445-5 Hash Table"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-18</div><div class="title">cmu445-5 Hash Table</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#Indexes"><span class="toc-number">1.</span> <span class="toc-text">Indexes</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#B-Tree"><span class="toc-number">2.</span> <span class="toc-text">B+Tree</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#B-Tree-Design-Decisions"><span class="toc-number">3.</span> <span class="toc-text">B+Tree Design Decisions</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%8A%82%E7%82%B9%E5%A4%A7%E5%B0%8F%EF%BC%9A"><span class="toc-number">3.1.</span> <span class="toc-text">节点大小：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%90%88%E5%B9%B6%E7%AD%96%E7%95%A5%EF%BC%9A"><span class="toc-number">3.2.</span> <span class="toc-text">合并策略：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8F%AF%E5%8F%98%E9%95%BF%E5%BA%A6%E7%9A%84%E9%94%AE%EF%BC%9A"><span class="toc-number">3.3.</span> <span class="toc-text">可变长度的键：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%9D%9E%E5%94%AF%E4%B8%80%E6%80%A7%E7%B4%A2%E5%BC%95%EF%BC%9A"><span class="toc-number">3.4.</span> <span class="toc-text">非唯一性索引：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%8A%82%E7%82%B9%E5%86%85%E6%90%9C%E7%B4%A2%E7%AD%96%E7%95%A5%EF%BC%9A"><span class="toc-number">3.5.</span> <span class="toc-text">节点内搜索策略：</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#B-Tree-Optimizations"><span class="toc-number">4.</span> <span class="toc-text">B+Tree Optimizations</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Additional-Index-Usage"><span class="toc-number">5.</span> <span class="toc-text">Additional Index Usage</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Radix-Tree"><span class="toc-number">6.</span> <span class="toc-text">Radix Tree</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Inverted-Indexes"><span class="toc-number">7.</span> <span class="toc-text">Inverted Indexes</span></a></li></ol></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2022 By Smartog</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi, welcome to my <a target="_blank" rel="noopener" href="https://butterfly.js.org/">blog</a>!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="/pluginsSrc/medium-zoom/dist/medium-zoom.min.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.2
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, ''],
+        insertScript: [200, () => {
+          document.querySelectorAll('mjx-container:not\([display]\)').forEach(node => {
+            const target = node.parentNode
+            if (target.nodeName.toLowerCase() === 'li') {
+              target.parentNode.classList.add('has-jax')
+            } else {
+              target.classList.add('has-jax')
+            }
+          });
+        }, '', false]
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = '/pluginsSrc/mathjax/es5/tex-mml-chtml.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typeset()
+}</script></div><canvas class="fireworks" mobile="false"></canvas><script src="/pluginsSrc/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="ribbon" src="/pluginsSrc/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
