@@ -1,0 +1,317 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>cmu445_Query_Planning_Optimization | 扶摇之鹏</title><meta name="keywords" content="database system"><meta name="author" content="Smartog,2369398685@qq.com"><meta name="copyright" content="Smartog"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="背景SQL 语句让我们能够描述想要获取的数据，而 DBMS 负责来根据用户的需求来制定高效的查询计划。不同的查询计划的效率可能出现多个数量级的差别，如 Join Algorithms 一节中的 Simple Nested Loop Join 与 Hash Join 的时间对比 (1.3 hours vs. 0.45 seconds)。 Query Optimizer 第一次出现在 IBM Syst">
+<meta property="og:type" content="article">
+<meta property="og:title" content="cmu445_Query_Planning_Optimization">
+<meta property="og:url" content="http://example.com/2022/07/22/cmu445-Query-Planning-Optimization/index.html">
+<meta property="og:site_name" content="扶摇之鹏">
+<meta property="og:description" content="背景SQL 语句让我们能够描述想要获取的数据，而 DBMS 负责来根据用户的需求来制定高效的查询计划。不同的查询计划的效率可能出现多个数量级的差别，如 Join Algorithms 一节中的 Simple Nested Loop Join 与 Hash Join 的时间对比 (1.3 hours vs. 0.45 seconds)。 Query Optimizer 第一次出现在 IBM Syst">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png">
+<meta property="article:published_time" content="2022-07-22T03:28:21.000Z">
+<meta property="article:modified_time" content="2022-07-23T14:18:54.755Z">
+<meta property="article:author" content="Smartog">
+<meta property="article:tag" content="database system">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2022/07/22/cmu445-Query-Planning-Optimization/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/pluginsSrc/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="/pluginsSrc/@fancyapps/ui/dist/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'mediumZoom',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: '/pluginsSrc/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: '/pluginsSrc/flickr-justified-gallery/dist/fjGallery.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'cmu445_Query_Planning_Optimization',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-07-23 22:18:54'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.2.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://img-blog.csdnimg.cn/63447a11067346dba31054a8381d2b63.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">32</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">15</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">扶摇之鹏</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">cmu445_Query_Planning_Optimization</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-07-22T03:28:21.000Z" title="发表于 2022-07-22 11:28:21">2022-07-22</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-07-23T14:18:54.755Z" title="更新于 2022-07-23 22:18:54">2022-07-23</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/cmu-15-445/">cmu 15-445</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="cmu445_Query_Planning_Optimization"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div><article class="post-content" id="article-container"><h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>SQL 语句让我们能够描述想要获取的数据，而 DBMS 负责来根据用户的需求来制定高效的查询计划。不同的查询计划的效率可能出现多个数量级的差别，如 Join Algorithms 一节中的 Simple Nested Loop Join 与 Hash Join 的时间对比 (1.3 hours vs. 0.45 seconds)。</p>
+<p>Query Optimizer 第一次出现在 IBM System R，那时人们认为 DBMS 指定的查询计划永远无法比人类指定的更好。System R 的 optimizer 中的一些理念至今仍在使用。</p>
+<h3 id="查询优化技术"><a href="#查询优化技术" class="headerlink" title="查询优化技术"></a>查询优化技术</h3><p><strong>Heuristics/Rules</strong></p>
+<ul>
+<li><strong>Rewrite the query</strong> to remove stupid/inefficient things</li>
+<li>Does not require a cost model</li>
+</ul>
+<p><strong>Cost-based Search</strong></p>
+<ul>
+<li>Use a <strong>cost model</strong> to evalucate multiple equivalent plans and pick the one with the lowest cost</li>
+</ul>
+<p><img src="https://pic2.zhimg.com/80/v2-c251a1bbdcfbca12d39b43527329b125_720w.jpg" alt="img" style="zoom: 67%;" /></p>
+<p>上图为查询执行的整个流程图，这里的 Rewriter 负责 Heuristics/Rules，Optimizer 则负责 Cost-based Search。</p>
+<h3 id="Query-Rewriting"><a href="#Query-Rewriting" class="headerlink" title="Query Rewriting"></a>Query Rewriting</h3><p>如果两个关系代数表达式 (Relational Algebra Expressions) 如果能产生相同的 tuple 集合，我们就称二者等价。DBMS 可以通过一些 Heuristics/Rules 来将关系几何表达式转化成成本更低的等价表达式，从而达到查询优化的目的。这些规则通常试用于所有查询，如：</p>
+<ul>
+<li><p><strong>Predicate Pushdown</strong></p>
+<p>Predicate 通常有很高的选择性，可以过滤掉许多无用的数据。将 Predicate 推到查询计划的底部，可以在查询开始时就更多地过滤数据，举例如下：</p>
+<p><img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-LapLaibKEqy0uOzxt1N%2F-LapNAe4jAlZq14MNkER%2FScreen%20Shot%202019-03-25%20at%2011.03.21%20PM.jpg?alt=media&token=c8e921c5-e475-4f4d-84b1-c2c8e34da8ab" alt="img" style="zoom:33%;" /></p>
+<p><img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-LapLaibKEqy0uOzxt1N%2F-LapNLNF-tdxCHKIpcFm%2FScreen%20Shot%202019-03-25%20at%2011.04.05%20PM.jpg?alt=media&token=6022c0fd-f987-40ab-a3b0-ad1e36f89a2b" alt="img" style="zoom:33%;" /></p>
+</li>
+<li><p><strong>Projections Pushdown</strong></p>
+<p>本方案对列存储数据库不适用。在行存储数据库中，越早过滤掉不用的字段越好，因此将 Projections 操作往查询计划底部推也能够缩小中间结果占用的空间大小，举例如下：</p>
+<p><img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-LapLaibKEqy0uOzxt1N%2F-LapOlNeBS4k6SZ45deL%2FScreen%20Shot%202019-03-25%20at%2011.10.13%20PM.jpg?alt=media&token=83992979-3776-4adb-9eba-82684d0f9634" alt="img" style="zoom:33%;" /></p>
+</li>
+</ul>
+<h3 id="Cost-based-Search"><a href="#Cost-based-Search" class="headerlink" title="Cost-based Search"></a>Cost-based Search</h3><p>除了 Predicates 和 Projections 以外，许多操作没有通用的规则，如 Join：Join 操作既符合交换律又符合结合律，等价关系代数表达式数量庞大，这时候就需要一些成本估算技术，将过滤性大的表作为 Outer Table，小的作为 Inner Table，从而达到查询优化的目的。</p>
+<p><strong>Cost Estimation：</strong></p>
+<p>一个查询需要花费多长时间，取决于许多因素 ：</p>
+<ul>
+<li><p>CPU: Small cost; tough to estimate</p>
+</li>
+<li><p>Disk: #block transfers</p>
+</li>
+<li><p>Memory: Amount of DRAM used</p>
+</li>
+<li><p>Network: #messages</p>
+</li>
+</ul>
+<p>但本质上取决于：<strong>整个查询过程需要读入和写出多少 tuples</strong>。因此 DBMS 需要保存每个 table 的一些统计信息，如 attributes、indexes 等信息，有助于估计查询成本。值得一提的是，不同的 DBMS 的搜集、更新统计信息的策略不同。</p>
+<p><strong>Statistics：</strong></p>
+<p>通常，DBMS 对任意的 table R，都保存着以下信息：</p>
+<ul>
+<li><script type="math/tex">N_R</script>: R中的tuples数量；</li>
+<li><script type="math/tex">V(A,R)</script>: R中A属性的不同取值（distinct values）个数；</li>
+<li><script type="math/tex">A_{max},A_{min}</script>: A属性取值的最大值、最小值；</li>
+</ul>
+<p>利用上面两条数据，可以得到 selection cardinality，即 R 中 A 属性下每个值的平均记录个数：<script type="math/tex">SC(A,R)=\frac{N_R}{V(A,R)}</script>。需要注意的是，这种估计假设 R 中所有数据在 A 属性下均匀分布 (data uniformity)。利用以上信息和假设，DBMS 可以估计不同 predicates 的 selectivity：</p>
+<ul>
+<li><script type="math/tex; mode=display">select(A=constant)=SC(P)/V(A,R)</script></li>
+<li><script type="math/tex; mode=display">select(A \geq a=\frac{A_{max}-a}{A_{max}-A_{min}} )</script></li>
+<li><script type="math/tex; mode=display">select(not\ P)=1-select(P)</script></li>
+<li><script type="math/tex">select(P1\and P2)=select(P1)\times select(P2)</script>,两个P之间相互独立</li>
+<li><script type="math/tex; mode=display">select(P1\or P2)=select(P1)+select(P2)-select(P1)\times select(P2)</script></li>
+</ul>
+<p><strong>Sampling</strong>:</p>
+<p>现代 DBMSs 也会使用采样技术来降低成本估计本身的成本，面对如下查询,我们可以等间隔从表中对数据采样，当然，为了避免重复采样，DMBS 会保存一份采样表，待 table 的变动较大时，再更新采样表。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="built_in">AVG</span>(age)</span><br><span class="line">  <span class="keyword">FROM</span> people</span><br><span class="line"> <span class="keyword">WHERE</span> age <span class="operator">&gt;</span> <span class="number">50</span>;</span><br></pre></td></tr></table></figure>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th><img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-LarNAd0l8U0m5ptaiEs%2F-LaraXlcKkiV682OmASF%2FScreen%20Shot%202019-03-26%20at%209.25.19%20AM.jpg?alt=media&amp;token=ede930c2-b8bc-450a-bc16-976dfdd6a86b" alt="img"></th>
+<th><img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-LarNAd0l8U0m5ptaiEs%2F-LaraeduBhwq8nBSXgGd%2FScreen%20Shot%202019-03-26%20at%209.25.53%20AM.jpg?alt=media&amp;token=daad12fa-9f3b-4bda-bd3e-98fdd67991d3" alt="img"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="Plan-Enumeration"><a href="#Plan-Enumeration" class="headerlink" title="Plan Enumeration"></a>Plan Enumeration</h3><p>当执行完基于规则的重写后，DBMS将针对查询枚举不同的计划，并估计每个计划的开销，DBMS将在穷尽所有可能的查询计划或者超时后选择看到过的最好的计划来执行查询。</p>
+<p><strong>对于Single relation：</strong></p>
+<ul>
+<li><p>选择最优的访问方式</p>
+<ul>
+<li><p>Sequential Scan</p>
+</li>
+<li><p>Binary Search (clustered indexes)</p>
+</li>
+<li><p>Index Scan</p>
+</li>
+</ul>
+</li>
+<li><p>Predicate evaluation ordering</p>
+</li>
+</ul>
+<p><strong>对于Multiple relations：</strong></p>
+<ul>
+<li><p>随着参与链接的表的数量的增加，可能的查询方案数量将指数增长。System R中只考虑left-deep join，但是现代DBMSs并不总是进行这一假设。 </p>
+<p><img src="https://img-blog.csdnimg.cn/b2a24ce2b7054c07bbf855dd4f58bfe0.png" alt="在这里插入图片描述" style="zoom: 67%;" /></p>
+<p>选择left-deep join是因为其允许将中间结果不写入临时文件，实现完全管道流水，但是并不是所有的left-deep join都支持完全管道化操作。</p>
+</li>
+<li><p><strong>多表查询的一般步骤为：</strong></p>
+<ul>
+<li><p><strong>Enumerate the orderings：</strong> Left-deep tree #1, Left-deep tree #2…</p>
+<p><img src="https://img-blog.csdnimg.cn/7ee8c5a9937943e2be914d2110476f13.png" alt="在这里插入图片描述" style="zoom: 50%;" /></p>
+</li>
+<li><p><strong>Enumerate the plans for each operator：</strong>Hash, Sort-Merge, Nested Loop…</p>
+<p><img src="https://img-blog.csdnimg.cn/d49a86aeaedf45829c680b7b7e0c4c6c.png" alt="在这里插入图片描述" style="zoom:50%;" /></p>
+</li>
+<li><p><strong>Enumerate the access paths for each table：</strong> Index #1, Index #2, Seq Scan…</p>
+<p><img src="https://img-blog.csdnimg.cn/f61a18406fe644099b44ccce2abf243c.png" alt="在这里插入图片描述" style="zoom:50%;" /></p>
+</li>
+</ul>
+</li>
+<li><p>一般使用动态编程来降低开销估计的数量：</p>
+<p>| <img src="https://img-blog.csdnimg.cn/2cae4cb4f310418e8a0c00b109c936a7.png" alt="在这里插入图片描述" style="zoom:67%;" /> |<br>| :—————————————————————————————: |<br>| <img src="https://img-blog.csdnimg.cn/bcc2484a6cd647839bcd7a2f62138592.png" alt="在这里插入图片描述" style="zoom:67%;" /> |<br>| <img src="https://img-blog.csdnimg.cn/105b62fc7c4d4c02ac3354b5207eac87.png" alt="在这里插入图片描述" style="zoom:67%;" /> |<br>| <img src="https://img-blog.csdnimg.cn/8f4113bb6ade46ef80a08d6d865c7c58.png" alt="在这里插入图片描述" style="zoom:67%;" /> |<br>| <img src="https://img-blog.csdnimg.cn/0c25daffa50045b8bca59992420e377c.png" alt="在这里插入图片描述" style="zoom:67%;" /> |</p>
+</li>
+<li><p>当查询中的表数小于12个时，Postgres使用传统算法，当有12个或更多时切换到GEQO：</p>
+<p><img src="https://img-blog.csdnimg.cn/b48a9f501bbf450797ba26c99692a211.png" alt="在这里插入图片描述" style="zoom:67%;" /></p>
+</li>
+</ul>
+<p><strong>对于Nested sub-queries：</strong></p>
+<ul>
+<li><p>DBMS将where子句中的嵌套子查询视为接受参数并返回单个值或一组值的函数。一般有两种处理方式：</p>
+<ul>
+<li><p>重写以解除关联和/或使它们变平</p>
+</li>
+<li><p>将嵌套的查询并存储结果分解为临时表</p>
+<p><img src="https://img-blog.csdnimg.cn/33d9d7a77fe04681a2cb013844ed79b6.png" alt="在这里插入图片描述" style="zoom:67%;" /></p>
+</li>
+</ul>
+</li>
+</ul>
+<p>转载：<a target="_blank" rel="noopener" href="https://zhenghe.gitbook.io/open-courses/cmu-15-445-645-database-systems/query-optimization#query-rewriting">https://zhenghe.gitbook.io/open-courses/cmu-15-445-645-database-systems/query-optimization#query-rewriting</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://example.com">Smartog</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2022/07/22/cmu445-Query-Planning-Optimization/">http://example.com/2022/07/22/cmu445-Query-Planning-Optimization/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">扶摇之鹏</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/database-system/">database system</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="/pluginsSrc/butterfly-extsrc/ShareJS/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="/pluginsSrc/butterfly-extsrc/ShareJS/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="https://img-blog.csdnimg.cn/9732abb7d2ec4ba09cba5cf29507e04f.jpeg" target="_blank"><img class="post-qr-code-img" src="https://img-blog.csdnimg.cn/9732abb7d2ec4ba09cba5cf29507e04f.jpeg" alt="微信"/></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="https://img-blog.csdnimg.cn/899038c3a02c4a14925da419444eb3a4.jpeg" target="_blank"><img class="post-qr-code-img" src="https://img-blog.csdnimg.cn/899038c3a02c4a14925da419444eb3a4.jpeg" alt="支付宝"/></a><div class="post-qr-code-desc">支付宝</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2022/07/22/cmu445-Query-Execution/"><img class="next-cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">cmu445_Query_Execution</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2022/07/12/cmu445-1/" title="cmu 14-445 1 relational model"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg2.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-12</div><div class="title">cmu 14-445 1 relational model</div></div></a></div><div><a href="/2022/07/13/cmu445-2/" title="cmu14-445 2 Advanced SQL"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-13</div><div class="title">cmu14-445 2 Advanced SQL</div></div></a></div><div><a href="/2022/07/14/cmu445-3/" title="cmu15-445-3 Data Storage"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-14</div><div class="title">cmu15-445-3 Data Storage</div></div></a></div><div><a href="/2022/07/16/cmu445-4/" title="cmu445-4 Buffer Pools"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-16</div><div class="title">cmu445-4 Buffer Pools</div></div></a></div><div><a href="/2022/07/18/cmu445-hash_table/" title="cmu445-5 Hash Table"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-18</div><div class="title">cmu445-5 Hash Table</div></div></a></div><div><a href="/2022/07/19/cmu445-Tree-Indexes/" title="cmu445-6 Tree Indexes"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-19</div><div class="title">cmu445-6 Tree Indexes</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%83%8C%E6%99%AF"><span class="toc-number">1.</span> <span class="toc-text">背景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2%E4%BC%98%E5%8C%96%E6%8A%80%E6%9C%AF"><span class="toc-number">2.</span> <span class="toc-text">查询优化技术</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Query-Rewriting"><span class="toc-number">3.</span> <span class="toc-text">Query Rewriting</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Cost-based-Search"><span class="toc-number">4.</span> <span class="toc-text">Cost-based Search</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Plan-Enumeration"><span class="toc-number">5.</span> <span class="toc-text">Plan Enumeration</span></a></li></ol></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2022 By Smartog</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi, welcome to my <a target="_blank" rel="noopener" href="https://butterfly.js.org/">blog</a>!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="/pluginsSrc/medium-zoom/dist/medium-zoom.min.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.2
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, ''],
+        insertScript: [200, () => {
+          document.querySelectorAll('mjx-container:not\([display]\)').forEach(node => {
+            const target = node.parentNode
+            if (target.nodeName.toLowerCase() === 'li') {
+              target.parentNode.classList.add('has-jax')
+            } else {
+              target.classList.add('has-jax')
+            }
+          });
+        }, '', false]
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = '/pluginsSrc/mathjax/es5/tex-mml-chtml.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typeset()
+}</script></div><canvas class="fireworks" mobile="false"></canvas><script src="/pluginsSrc/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="ribbon" src="/pluginsSrc/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
