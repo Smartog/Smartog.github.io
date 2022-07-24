@@ -1,0 +1,310 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>cmu445_Multiversion_Concurrency_Control | 扶摇之鹏</title><meta name="keywords" content="database system"><meta name="author" content="Smartog,2369398685@qq.com"><meta name="copyright" content="Smartog"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="简介简而言之，实现 MVCC 的 DBMS 在内部维持着单个逻辑数据的多个物理版本，当事务修改某数据时，DBMS 将为其创建一个新的版本；当事务读取某数据时，它将读到该数据在事务开始时刻之前的最新版本。 MVCC 首次被提出是在 1978 年的一篇  MIT 的博士论文中。在 80 年代早期，DEC 的 Rdb&#x2F;VMS 和 InterBase 首次真正实现了 MVCC，其作者是 Jim Stark">
+<meta property="og:type" content="article">
+<meta property="og:title" content="cmu445_Multiversion_Concurrency_Control">
+<meta property="og:url" content="http://example.com/2022/07/24/cmu445-Multiversion-Concurrency-Control/index.html">
+<meta property="og:site_name" content="扶摇之鹏">
+<meta property="og:description" content="简介简而言之，实现 MVCC 的 DBMS 在内部维持着单个逻辑数据的多个物理版本，当事务修改某数据时，DBMS 将为其创建一个新的版本；当事务读取某数据时，它将读到该数据在事务开始时刻之前的最新版本。 MVCC 首次被提出是在 1978 年的一篇  MIT 的博士论文中。在 80 年代早期，DEC 的 Rdb&#x2F;VMS 和 InterBase 首次真正实现了 MVCC，其作者是 Jim Stark">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg.png">
+<meta property="article:published_time" content="2022-07-24T01:49:19.000Z">
+<meta property="article:modified_time" content="2022-07-24T13:41:01.488Z">
+<meta property="article:author" content="Smartog">
+<meta property="article:tag" content="database system">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2022/07/24/cmu445-Multiversion-Concurrency-Control/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/pluginsSrc/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="/pluginsSrc/@fancyapps/ui/dist/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'mediumZoom',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: '/pluginsSrc/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: '/pluginsSrc/flickr-justified-gallery/dist/fjGallery.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'cmu445_Multiversion_Concurrency_Control',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-07-24 21:41:01'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.2.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://img-blog.csdnimg.cn/63447a11067346dba31054a8381d2b63.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">41</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">15</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">扶摇之鹏</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">cmu445_Multiversion_Concurrency_Control</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-07-24T01:49:19.000Z" title="发表于 2022-07-24 09:49:19">2022-07-24</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-07-24T13:41:01.488Z" title="更新于 2022-07-24 21:41:01">2022-07-24</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/cmu15-445/">cmu15-445</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="cmu445_Multiversion_Concurrency_Control"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div><article class="post-content" id="article-container"><h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>简而言之，实现 MVCC 的 DBMS 在内部维持着单个逻辑数据的多个物理版本，当事务修改某数据时，DBMS 将为其创建一个新的版本；当事务读取某数据时，它将读到该数据在事务开始时刻之前的最新版本。</p>
+<p>MVCC 首次被提出是在 1978 年的一篇  MIT 的博士<a target="_blank" rel="noopener" href="https://web.archive.org/web/20051025124412/http://www.lcs.mit.edu/publications/specpub.php?id=773">论文</a>中。在 80 年代早期，DEC 的 Rdb/VMS 和 InterBase 首次真正实现了 MVCC，其作者是 Jim Starkey，NuoDB 的联合创始人。如今，Rdb/VMS 成了 Oracle Rdb，InterBase 成为开源项目 Firebird。</p>
+<h3 id="MVCC"><a href="#MVCC" class="headerlink" title="MVCC"></a>MVCC</h3><p>MVCC 的核心优势可以总结为以下两句话：</p>
+<ul>
+<li><p><strong>Writers don’t block readers. 写不阻塞读</strong></p>
+</li>
+<li><p><strong>Readers don’t block writers. 读不阻塞写</strong></p>
+</li>
+</ul>
+<p>只读事务无需加锁就可以读取数据库某一时刻的快照，如果保留数据的所有历史版本，DBMS 甚至能够支持读取任意历史版本的数据，即 time-travel。</p>
+<h4 id="Example-1"><a href="#Example-1" class="headerlink" title="Example #1"></a>Example #1</h4><p>事务<script type="math/tex">T_1</script>和<script type="math/tex">T_2</script>分别获得时间戳 1 和 2，二者的执行过程如下图所示。开始前，数据库存有数据 A 的原始版本 <script type="math/tex">A_0</script>，<script type="math/tex">T_1</script>先读取 A 数据：</p>
+<p><img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-M6w-z5vz1ijI0VRFJCo%2F-M6w3znotWi_QUedNdUM%2FScreen%20Shot%202020-05-10%20at%208.54.51%20AM.jpg?alt=media&token=c42113db-6817-4610-b248-ddfacfe0fc79" alt="img" style="zoom:33%;" /></p>
+<p>然后 <script type="math/tex">T_2</script>修改 A 数据，这时 DBMS 中将增加 A 数据的新版本 <script type="math/tex">A_1</script>，同时标记 <script type="math/tex">A_1</script>的开始时间戳为 2，<script type="math/tex">A_0</script> 的结束时间戳为 2：</p>
+<p><img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-M6w-z5vz1ijI0VRFJCo%2F-M6w5WIFs176i5aGE8xg%2FScreen%20Shot%202020-05-10%20at%209.01.32%20AM.jpg?alt=media&token=cf64558a-dadf-448d-a01d-e7e6d6060548" alt="img" style="zoom:33%;" /></p>
+<p><script type="math/tex">T_1</script>再次读取 A，因为它的时间戳为 1，根据记录的信息，DBMS 将 <script type="math/tex">A_0</script>返回给 <script type="math/tex">T_1</script>:</p>
+<p><img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-M6w-z5vz1ijI0VRFJCo%2F-M6w64OXrZix0VIfum6z%2FScreen%20Shot%202020-05-10%20at%209.03.57%20AM.jpg?alt=media&token=b2925d4b-0a7e-4080-b6d3-f8344f5d0378" alt="img" style="zoom:33%;" /></p>
+<h4 id="Example-2"><a href="#Example-2" class="headerlink" title="Example #2"></a>Example #2</h4><p>例 2 与例 1 类似，<script type="math/tex">T_1</script>先修改数据 A：</p>
+<p><img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-M6w-z5vz1ijI0VRFJCo%2F-M6w80iLmnLvJtnOBp3f%2FScreen%20Shot%202020-05-10%20at%209.12.21%20AM.jpg?alt=media&token=5201b2b7-d2e3-492a-a9c6-258cf1381e78" alt="img" style="zoom:33%;" /></p>
+<p>此时 <script type="math/tex">T_2</script>读取 A，由于<script type="math/tex">T_1</script>尚未提交，<script type="math/tex">T_2</script>只能读取 <script type="math/tex">A_0</script>：</p>
+<p><img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-M6w-z5vz1ijI0VRFJCo%2F-M6w8QTLPWxLjK7LnMyv%2FScreen%20Shot%202020-05-10%20at%209.14.14%20AM.jpg?alt=media&token=9b7506f5-3fdf-43cc-962d-7106b3d99adf" alt="img" style="zoom:33%;" /></p>
+<p><script type="math/tex">T_2</script>想修改 A，但由于有另一个活跃的事务 <script type="math/tex">T_1</script>正在修改 A ， <script type="math/tex">T_2</script>需要等待 <script type="math/tex">T_1</script>提交后才能继续推进：</p>
+<p><img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-M6w-z5vz1ijI0VRFJCo%2F-M6w9Qrm0m_6fjfgbK0C%2FScreen%20Shot%202020-05-10%20at%209.18.37%20AM.jpg?alt=media&token=a15c7bd3-141e-4684-9184-a2050d910622" alt="img" style="zoom:33%;" /></p>
+<p><script type="math/tex">T_1</script>提交后，<script type="math/tex">T_2</script>创建了 A 的下一个版本 <script type="math/tex">A_2</script> ：</p>
+<p><img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-M6w-z5vz1ijI0VRFJCo%2F-M6wAQUT4F7k_-B-UPHF%2FScreen%20Shot%202020-05-10%20at%209.22.58%20AM.jpg?alt=media&token=f1027429-6cb8-4cdb-ae43-a9f263079fd9" alt="img" style="zoom:33%;" /></p>
+<h4 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h4><p>MVCC 并不只是一个并发控制协议，并发控制协议只是它的一个组成部分。它深刻地影响了 DBMS 管理事务和数据的方式，使用 MVCC 的 DBMS 数不胜数：</p>
+<p><img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-M6w-z5vz1ijI0VRFJCo%2F-M6wCxNsNNNJhs4d3hhi%2FScreen%20Shot%202020-05-10%20at%209.34.02%20AM.jpg?alt=media&token=01d21bd3-8bb0-4a17-ae03-b343e42f71d6" alt="img" style="zoom: 33%;" /></p>
+<h3 id="Design-Decisions"><a href="#Design-Decisions" class="headerlink" title="Design Decisions"></a>Design Decisions</h3><p>上文提到，MVCC 不止是一个并发控制协议，它由许多部分组成，这些部分包括：</p>
+<ul>
+<li><p><strong>Concurrency Control Protocol</strong></p>
+</li>
+<li><p><strong>Version Storage</strong></p>
+</li>
+<li><p><strong>Garbage Collection</strong></p>
+</li>
+<li><p><strong>Index Management</strong></p>
+</li>
+</ul>
+<p>每一部分都可以选择不同的方案，可以根据具体场景作出最优的设计选择。</p>
+<h4 id="Concurrency-Control-Protocol"><a href="#Concurrency-Control-Protocol" class="headerlink" title="Concurrency Control Protocol"></a>Concurrency Control Protocol</h4><p>前面 2 节课已经介绍了各种并发控制协议，MVCC 可以选择其中任意一个：</p>
+<ul>
+<li><p><strong>Approach 1： </strong>Timestamp Ordering (T/O)：为每个事务赋予时间戳，并用以决定执行顺序;</p>
+</li>
+<li><p><strong>Approach 2： </strong>Optimistic Concurrency Control (OCC)：为每个事务创建 private workspace，并将事务分为 read, write 和 validate 3 个阶段处理 ;</p>
+</li>
+<li><strong>Approach 3：</strong> Two-Phase Locking (2PL)：按照 2PL 的约定获取和释放锁;</li>
+</ul>
+<h4 id="Version-Storage"><a href="#Version-Storage" class="headerlink" title="Version Storage"></a>Version Storage</h4><p>如何存储一条数据的多个版本？DBMS 通常会在每条数据上拉一条版本链表 (version chain)，所有相关的索引都会指到这个链表的 head，DBMS 可以利用它找到一个事务应该访问到的版本。不同的版本存储方案在 version chain 上存储的数据不同，主要有 3 种存储方案：</p>
+<ul>
+<li><p><strong>Approach 1： </strong>Append-Only Storage：</p>
+<p>新版本通过追加的方式存储在同一张表中。如下图所示，同一个逻辑数据的所有物理版本都被存储在同一张表上，每次更新时，就往表上追加一个新的版本记录，并在旧版本的数据上增加一个指针指向新版本：</p>
+<p>| <img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-M6w-z5vz1ijI0VRFJCo%2F-M6wIKBUuYJaPcdP9h4x%2FScreen%20Shot%202020-05-10%20at%209.57.30%20AM.jpg?alt=media&token=cc0796aa-6820-466d-8917-4634e4404e76" alt="img"  /> | <img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-M6w-z5vz1ijI0VRFJCo%2F-M6wIpJAGMj6lYI5gOSD%2FScreen%20Shot%202020-05-10%20at%209.59.39%20AM.jpg?alt=media&amp;token=b7cd3f9e-34d4-41ef-bd7e-5b321fce02b9" alt="img"> |<br>| —————————————————————————————— | —————————————————————————————— |</p>
+<p>也许你已经注意到，指针的方向也可以从新到旧，二者的权衡如下：</p>
+<ul>
+<li><p><strong>Approach 1： Oldest-to-Newest (O2N)：</strong></p>
+<p>写的时候追加即可，读的时候需要遍历链表 ；</p>
+</li>
+<li><p><strong>Approach 2： Newest-to-Oldest (N2O)：</strong></p>
+<p>写的时候需要更新所有索引指针，读的时候不需要遍历链表；</p>
+</li>
+</ul>
+</li>
+<li><p><strong>Approach 2： </strong>Time-Travel Storage：</p>
+<p>老版本被复制到单独的一张表中。单独拿一张表 (Time-Travel Table) 来存历史数据，每当更新数据时，就把当前版本复制到 TTT 中，并更新指针：</p>
+<p>| <img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-M6w-z5vz1ijI0VRFJCo%2F-M6wPh9aHblLel0sS-sa%2FScreen%20Shot%202020-05-10%20at%2010.29.10%20AM.jpg?alt=media&amp;token=f29037f3-7ee0-4916-8f34-76e0b494d54d" alt="img"> |<br>| —————————————————————————————— |<br>| <img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-M6w-z5vz1ijI0VRFJCo%2F-M6wPoSQZMBPfhEDuk-2%2FScreen%20Shot%202020-05-10%20at%2010.30.13%20AM.jpg?alt=media&amp;token=31d80d5e-da3c-48d5-a894-02da424b881d" alt="img"> |<br>| <img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-M6w-z5vz1ijI0VRFJCo%2F-M6wQfNqA2Ck8XgSRQK2%2FScreen%20Shot%202020-05-10%20at%2010.33.58%20AM.jpg?alt=media&amp;token=a4d821cc-9ac9-431b-b47b-dee759e5f6fa" alt="img"> |</p>
+</li>
+<li><p><strong>Approach 3： </strong>Delta Storage：</p>
+<p>老版本数据的被修改的字段值被复制到一张单独的增量表 (delta record space) 中。每次更新，仅将变化的字段信息存储到 delta storage segment 中：</p>
+<p>| <img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-M6w-z5vz1ijI0VRFJCo%2F-M6wR-Ssq1MrdYZQKIeo%2FScreen%20Shot%202020-05-10%20at%2010.35.24%20AM.jpg?alt=media&amp;token=c99df96b-6869-42cf-bda5-09cc0ff04ad8" alt="img"> |<br>| —————————————————————————————— |<br>| <img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-M6w-z5vz1ijI0VRFJCo%2F-M6wR7n3rpKK_HYP7oUs%2FScreen%20Shot%202020-05-10%20at%2010.35.58%20AM.jpg?alt=media&amp;token=aa0100d4-d72f-4b09-94b0-9acdddb5d11b" alt="img"> |</p>
+</li>
+</ul>
+<h4 id="Garbage-Collection"><a href="#Garbage-Collection" class="headerlink" title="Garbage Collection"></a>Garbage Collection</h4><p>随着时间的推移，DBMS 中数据的旧版本可能不再会被用到，如：</p>
+<ul>
+<li><p>已经没有活跃的事务需要看到该版本</p>
+</li>
+<li><p>该版本是被一个已经中止的事务创建</p>
+</li>
+</ul>
+<p>这时候 DBMS 需要删除这些可以回收的物理版本，这个过程也被称为 GC。在 GC 的过程中，还有两个附加设计决定：</p>
+<ul>
+<li><p>如何查找过期的数据版本</p>
+</li>
+<li><p>如何确定某版本数据是否可以被安全回收</p>
+</li>
+</ul>
+<p>GC 可以从两个角度出发：</p>
+<ul>
+<li><p><strong>Approach 1： Tuple-level：</strong></p>
+<p>直接检查每条数据的旧版本数据，Background Vacuuming。</p>
+<p>如下图所示，假设有 2 个活跃事务，它们的时间戳分别为 12 和 25：</p>
+<p><img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-M6wT4DQo_NTjQlHPZKQ%2F-M6wV3UFiDiqRmgCxB1D%2FScreen%20Shot%202020-05-10%20at%2010.52.04%20AM.jpg?alt=media&token=090e7eb0-d659-4295-98e5-eaf99edd75bb" alt="img" style="zoom:33%;" /></p>
+<p>这时有个 Vacuum 守护线程会周期性地检查每条数据的不同版本，如果它的结束时间小于当前活跃事务的最小时间戳，则将其删除：</p>
+<p><img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-M6wT4DQo_NTjQlHPZKQ%2F-M6wVQIGffqhvaKBhYnc%2FScreen%20Shot%202020-05-10%20at%2010.54.43%20AM.jpg?alt=media&token=8c3cd0a5-dd66-4bba-b10e-7dceb88f6454" alt="img" style="zoom:33%;" /></p>
+<p>为了加快 GC 的速度，DBMS 可以再维护一个脏页位图 (dirty page bitmap)，利用它，Vacuum 线程可以只检查发生过改动的数据，用空间换时间。Background Vacuuming 被用于任意 Version Storage 的方案。</p>
+<p><strong>Cooperative Cleaning</strong>，还有一种做法是当 worker thread 查询数据时，顺便将不再使用物理数据版本删除，cooperative cleaning 只能用于使用 O2N 的 version chain 方案。</p>
+<p><img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-M6wT4DQo_NTjQlHPZKQ%2F-M6wXGSHr_jBwULYvCS-%2FScreen%20Shot%202020-05-10%20at%2011.02.47%20AM.jpg?alt=media&token=ef2b5ced-4511-4311-a83a-d9d193e1bdb6" alt="img" style="zoom: 25%;" /></p>
+<p><img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-M6wT4DQo_NTjQlHPZKQ%2F-M6wXMYQT-hXcMi6lAdd%2FScreen%20Shot%202020-05-10%20at%2011.03.10%20AM.jpg?alt=media&token=c537aa64-4566-4def-9f2d-1e25c1df1324" alt="img" style="zoom: 25%;" /></p>
+</li>
+<li><p><strong>Approach 2： Transaction-level：</strong></p>
+<p>每个事务负责跟踪数据的旧版本，DBMS 不需要亲自检查单条数据。让每个事务都保存着它的读写数据集合 (read/write set)，当 DBMS 决定什么时候这个事务创建的各版本数据可以被回收时，就按照集合内部的数据处理即可。</p>
+</li>
+</ul>
+<h4 id="Index-Management"><a href="#Index-Management" class="headerlink" title="Index Management"></a>Index Management</h4><p><strong>Primary Key Index，</strong>主键索引直接指向 version chain 的头部。</p>
+<p><strong>Secondary Indexes，</strong>二级索引有两种方式指向数据本身：</p>
+<ul>
+<li><strong>Approach 1：逻辑指针，</strong>即存储主键值或 Tuple Id </li>
+<li><strong>Approach 2：物理指针，</strong>即存储指向 version chain 头部的指针</li>
+</ul>
+<p><strong>Physical Pointer</strong></p>
+<p><img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-M6wT4DQo_NTjQlHPZKQ%2F-M6w_2HjMbwcNkm45C4m%2FScreen%20Shot%202020-05-10%20at%2011.14.49%20AM.jpg?alt=media&token=500014eb-9b2e-4c03-8a89-6cdf1ec613cd" alt="img" style="zoom:25%;" /></p>
+<p><strong>Logical Pointer by Primary Key</strong></p>
+<p><img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-M6wT4DQo_NTjQlHPZKQ%2F-M6w_EdXmLHUi5oJanfC%2FScreen%20Shot%202020-05-10%20at%2011.15.46%20AM.jpg?alt=media&token=8c7e28a3-e170-4ec7-a67e-574d6aad7173" alt="img" style="zoom:25%;" /></p>
+<p><strong>Logical Pointer by Tuple Id</strong></p>
+<p><img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-M6wT4DQo_NTjQlHPZKQ%2F-M6w_Rj3SflbBlFymMW9%2FScreen%20Shot%202020-05-10%20at%2011.16.40%20AM.jpg?alt=media&token=753e01fb-6f94-412f-b217-dac298bc1e9b" alt="img" style="zoom:25%;" /></p>
+<h4 id="MVCC-Implementations"><a href="#MVCC-Implementations" class="headerlink" title="MVCC Implementations"></a>MVCC Implementations</h4><p>市面上 MVCC 的实现所做的设计决定如下表所示：</p>
+<p><img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-M6wT4DQo_NTjQlHPZKQ%2F-M6w_lUwVPCHxUHV6We4%2FScreen%20Shot%202020-05-10%20at%2011.18.00%20AM.jpg?alt=media&token=96493100-ee41-41bc-b4ce-e0cbe813fcfe" alt="img" style="zoom: 33%;" /></p>
+<font color=red >MVCC 被许多 DBMS 采用，即使那些不支持多语句事务 (multi-statement txns) 的 DBMS 也会使用这种方案，如一些 NoSQL 项目。</font>
+
+
+
+<p>转载：<a target="_blank" rel="noopener" href="https://zhenghe.gitbook.io/open-courses/cmu-15-445-645-database-systems/multi-version-concurrency-control">https://zhenghe.gitbook.io/open-courses/cmu-15-445-645-database-systems/multi-version-concurrency-control</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://example.com">Smartog</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2022/07/24/cmu445-Multiversion-Concurrency-Control/">http://example.com/2022/07/24/cmu445-Multiversion-Concurrency-Control/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">扶摇之鹏</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/database-system/">database system</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="/pluginsSrc/butterfly-extsrc/ShareJS/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="/pluginsSrc/butterfly-extsrc/ShareJS/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="https://img-blog.csdnimg.cn/9732abb7d2ec4ba09cba5cf29507e04f.jpeg" target="_blank"><img class="post-qr-code-img" src="https://img-blog.csdnimg.cn/9732abb7d2ec4ba09cba5cf29507e04f.jpeg" alt="微信"/></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="https://img-blog.csdnimg.cn/899038c3a02c4a14925da419444eb3a4.jpeg" target="_blank"><img class="post-qr-code-img" src="https://img-blog.csdnimg.cn/899038c3a02c4a14925da419444eb3a4.jpeg" alt="支付宝"/></a><div class="post-qr-code-desc">支付宝</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2022/07/24/cmu445-Logging-Schemes/"><img class="prev-cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg2.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">cmu445_Logging_Schemes</div></div></a></div><div class="next-post pull-right"><a href="/2022/07/24/cmu445-Timestamp-Ordering-Concurrency-Control/"><img class="next-cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">cmu445_Timestamp_Ordering_Concurrency_Control</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2022/07/12/cmu445-1/" title="cmu 14-445 1 relational model"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg2.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-12</div><div class="title">cmu 14-445 1 relational model</div></div></a></div><div><a href="/2022/07/13/cmu445-2/" title="cmu14-445 2 Advanced SQL"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-13</div><div class="title">cmu14-445 2 Advanced SQL</div></div></a></div><div><a href="/2022/07/14/cmu445-3/" title="cmu15-445-3 Data Storage"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-14</div><div class="title">cmu15-445-3 Data Storage</div></div></a></div><div><a href="/2022/07/16/cmu445-4/" title="cmu445-4 Buffer Pools"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-16</div><div class="title">cmu445-4 Buffer Pools</div></div></a></div><div><a href="/2022/07/18/cmu445-hash_table/" title="cmu445-5 Hash Table"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-18</div><div class="title">cmu445-5 Hash Table</div></div></a></div><div><a href="/2022/07/19/cmu445-Tree-Indexes/" title="cmu445-6 Tree Indexes"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-19</div><div class="title">cmu445-6 Tree Indexes</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B"><span class="toc-number">1.</span> <span class="toc-text">简介</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MVCC"><span class="toc-number">2.</span> <span class="toc-text">MVCC</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Example-1"><span class="toc-number">2.1.</span> <span class="toc-text">Example #1</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Example-2"><span class="toc-number">2.2.</span> <span class="toc-text">Example #2</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-number">2.3.</span> <span class="toc-text">小结</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Design-Decisions"><span class="toc-number">3.</span> <span class="toc-text">Design Decisions</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Concurrency-Control-Protocol"><span class="toc-number">3.1.</span> <span class="toc-text">Concurrency Control Protocol</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Version-Storage"><span class="toc-number">3.2.</span> <span class="toc-text">Version Storage</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Garbage-Collection"><span class="toc-number">3.3.</span> <span class="toc-text">Garbage Collection</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Index-Management"><span class="toc-number">3.4.</span> <span class="toc-text">Index Management</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#MVCC-Implementations"><span class="toc-number">3.5.</span> <span class="toc-text">MVCC Implementations</span></a></li></ol></li></ol></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2022 By Smartog</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi, welcome to my <a target="_blank" rel="noopener" href="https://butterfly.js.org/">blog</a>!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="/pluginsSrc/medium-zoom/dist/medium-zoom.min.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.2
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, ''],
+        insertScript: [200, () => {
+          document.querySelectorAll('mjx-container:not\([display]\)').forEach(node => {
+            const target = node.parentNode
+            if (target.nodeName.toLowerCase() === 'li') {
+              target.parentNode.classList.add('has-jax')
+            } else {
+              target.classList.add('has-jax')
+            }
+          });
+        }, '', false]
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = '/pluginsSrc/mathjax/es5/tex-mml-chtml.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typeset()
+}</script></div><canvas class="fireworks" mobile="false"></canvas><script src="/pluginsSrc/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="ribbon" src="/pluginsSrc/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
