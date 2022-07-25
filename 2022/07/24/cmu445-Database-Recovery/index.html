@@ -1,17 +1,17 @@
-<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>cmu445_Database_Recovery | 扶摇之鹏</title><meta name="keywords" content="database system"><meta name="author" content="Smartog,2369398685@qq.com"><meta name="copyright" content="Smartog"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="欢迎交流">
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>cmu445_Database_Recovery | 扶摇之鹏</title><meta name="keywords" content="database system"><meta name="author" content="Smartog,2369398685@qq.com"><meta name="copyright" content="Smartog"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="上节课介绍到，故障恢复算法由两个部分构成：  在事务执行过程中采取的行动来确保出现故障时能够恢复 (上节课) 在故障发生后的恢复机制，确保原子性、一致性和持久性 (本节课)  ARIES本节课介绍的是 Algorithms for Recovery and Isolation Exploiting Semantics (ARIES)，由 IBM Research 在 90 年代初为 DB2 DBM">
 <meta property="og:type" content="article">
 <meta property="og:title" content="cmu445_Database_Recovery">
 <meta property="og:url" content="http://example.com/2022/07/24/cmu445-Database-Recovery/index.html">
 <meta property="og:site_name" content="扶摇之鹏">
-<meta property="og:description" content="欢迎交流">
+<meta property="og:description" content="上节课介绍到，故障恢复算法由两个部分构成：  在事务执行过程中采取的行动来确保出现故障时能够恢复 (上节课) 在故障发生后的恢复机制，确保原子性、一致性和持久性 (本节课)  ARIES本节课介绍的是 Algorithms for Recovery and Isolation Exploiting Semantics (ARIES)，由 IBM Research 在 90 年代初为 DB2 DBM">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg2.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg.png">
 <meta property="article:published_time" content="2022-07-24T01:49:48.000Z">
-<meta property="article:modified_time" content="2022-07-24T12:39:30.834Z">
+<meta property="article:modified_time" content="2022-07-25T08:52:11.171Z">
 <meta property="article:author" content="Smartog">
 <meta property="article:tag" content="database system">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg2.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2022/07/24/cmu445-Database-Recovery/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/pluginsSrc/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="/pluginsSrc/@fancyapps/ui/dist/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2022/07/24/cmu445-Database-Recovery/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/pluginsSrc/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="/pluginsSrc/@fancyapps/ui/dist/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
   root: '/',
   algolia: undefined,
   localSearch: undefined,
@@ -52,8 +52,8 @@
   isPost: true,
   isHome: false,
   isHighlightShrink: false,
-  isToc: false,
-  postUpdate: '2022-07-24 20:39:30'
+  isToc: true,
+  postUpdate: '2022-07-25 16:52:11'
 }</script><noscript><style type="text/css">
   #nav {
     opacity: 1
@@ -142,7 +142,225 @@
       }
     }
     detectApple()
-    })(window)</script><meta name="generator" content="Hexo 6.2.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://img-blog.csdnimg.cn/63447a11067346dba31054a8381d2b63.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">41</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">15</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">扶摇之鹏</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">cmu445_Database_Recovery</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-07-24T01:49:48.000Z" title="发表于 2022-07-24 09:49:48">2022-07-24</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-07-24T12:39:30.834Z" title="更新于 2022-07-24 20:39:30">2022-07-24</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/cmu15-445/">cmu15-445</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="cmu445_Database_Recovery"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div><article class="post-content" id="article-container"></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://example.com">Smartog</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2022/07/24/cmu445-Database-Recovery/">http://example.com/2022/07/24/cmu445-Database-Recovery/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">扶摇之鹏</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/database-system/">database system</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg2.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="/pluginsSrc/butterfly-extsrc/ShareJS/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="/pluginsSrc/butterfly-extsrc/ShareJS/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="https://img-blog.csdnimg.cn/9732abb7d2ec4ba09cba5cf29507e04f.jpeg" target="_blank"><img class="post-qr-code-img" src="https://img-blog.csdnimg.cn/9732abb7d2ec4ba09cba5cf29507e04f.jpeg" alt="微信"/></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="https://img-blog.csdnimg.cn/899038c3a02c4a14925da419444eb3a4.jpeg" target="_blank"><img class="post-qr-code-img" src="https://img-blog.csdnimg.cn/899038c3a02c4a14925da419444eb3a4.jpeg" alt="支付宝"/></a><div class="post-qr-code-desc">支付宝</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2022/07/24/cmu445-Distributed-Databases/"><img class="prev-cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">cmu445_Distributed_Databases</div></div></a></div><div class="next-post pull-right"><a href="/2022/07/24/cmu445-Logging-Schemes/"><img class="next-cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg2.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">cmu445_Logging_Schemes</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2022/07/12/cmu445-1/" title="cmu 14-445 1 relational model"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg2.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-12</div><div class="title">cmu 14-445 1 relational model</div></div></a></div><div><a href="/2022/07/13/cmu445-2/" title="cmu14-445 2 Advanced SQL"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-13</div><div class="title">cmu14-445 2 Advanced SQL</div></div></a></div><div><a href="/2022/07/14/cmu445-3/" title="cmu15-445-3 Data Storage"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-14</div><div class="title">cmu15-445-3 Data Storage</div></div></a></div><div><a href="/2022/07/16/cmu445-4/" title="cmu445-4 Buffer Pools"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-16</div><div class="title">cmu445-4 Buffer Pools</div></div></a></div><div><a href="/2022/07/18/cmu445-hash_table/" title="cmu445-5 Hash Table"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-18</div><div class="title">cmu445-5 Hash Table</div></div></a></div><div><a href="/2022/07/19/cmu445-Tree-Indexes/" title="cmu445-6 Tree Indexes"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-19</div><div class="title">cmu445-6 Tree Indexes</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://img-blog.csdnimg.cn/63447a11067346dba31054a8381d2b63.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Smartog</div><div class="author-info__description">欢迎交流</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">41</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">15</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Smartog"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/Smartog" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:2369398685@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/07/24/cmu445-Distributed-OLAP-Databases/" title="cmu445_Distributed_OLAP_Databases">cmu445_Distributed_OLAP_Databases</a><time datetime="2022-07-24T01:50:18.000Z" title="发表于 2022-07-24 09:50:18">2022-07-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/07/24/cmu445-Distributed-OLTP-Databases/" title="cmu445_Distributed_OLTP_Databases">cmu445_Distributed_OLTP_Databases</a><time datetime="2022-07-24T01:50:11.000Z" title="发表于 2022-07-24 09:50:11">2022-07-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/07/24/cmu445-Distributed-Databases/" title="cmu445_Distributed_Databases">cmu445_Distributed_Databases</a><time datetime="2022-07-24T01:50:02.000Z" title="发表于 2022-07-24 09:50:02">2022-07-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/07/24/cmu445-Database-Recovery/" title="cmu445_Database_Recovery">cmu445_Database_Recovery</a><time datetime="2022-07-24T01:49:48.000Z" title="发表于 2022-07-24 09:49:48">2022-07-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/07/24/cmu445-Logging-Schemes/" title="cmu445_Logging_Schemes">cmu445_Logging_Schemes</a><time datetime="2022-07-24T01:49:35.000Z" title="发表于 2022-07-24 09:49:35">2022-07-24</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2022 By Smartog</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi, welcome to my <a target="_blank" rel="noopener" href="https://butterfly.js.org/">blog</a>!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="/pluginsSrc/medium-zoom/dist/medium-zoom.min.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+    })(window)</script><meta name="generator" content="Hexo 6.2.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://img-blog.csdnimg.cn/63447a11067346dba31054a8381d2b63.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">41</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">15</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">扶摇之鹏</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">cmu445_Database_Recovery</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-07-24T01:49:48.000Z" title="发表于 2022-07-24 09:49:48">2022-07-24</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-07-25T08:52:11.171Z" title="更新于 2022-07-25 16:52:11">2022-07-25</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/cmu15-445/">cmu15-445</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="cmu445_Database_Recovery"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div><article class="post-content" id="article-container"><p>上节课介绍到，故障恢复算法由两个部分构成：</p>
+<ul>
+<li>在<strong>事务执行过程中</strong>采取的行动来确保出现故障时能够恢复 (上节课)</li>
+<li>在<strong>故障发生后</strong>的恢复机制，确保原子性、一致性和持久性 (本节课)</li>
+</ul>
+<h3 id="ARIES"><a href="#ARIES" class="headerlink" title="ARIES"></a>ARIES</h3><p>本节课介绍的是 Algorithms for Recovery and Isolation Exploiting Semantics (ARIES)，由 IBM Research 在 90 年代初为 DB2 DBMS 研发的基于 WAL 的故障恢复机制，尽管并非所有 DBMS 都严格按照 ARIES paper 实现故障恢复机制，但它们的思路基本一致。</p>
+<p>ARIES 的核心思想可以总结为 3 点：</p>
+<ul>
+<li><p><strong>Write-Ahead Logging (WAL)</strong></p>
+<ul>
+<li><p>在数据落盘之前，所有写操作都必须记录在日志中并落盘</p>
+</li>
+<li><p>必须使用 Steal + No-Force 缓存管理策略 (buffer pool policies)</p>
+</li>
+</ul>
+</li>
+<li><p><strong>Repeating History During Redo</strong></p>
+<ul>
+<li>当 DBMS 重启时，按照日志记录的内容重做数据，恢复到故障发生前的状态</li>
+</ul>
+</li>
+<li><p><strong>Changes During Undo</strong></p>
+<ul>
+<li>在 undo 过程中记录 undo 操作到日志中，确保在恢复期间再次出现故障时不会执行多次相同的 undo 操作</li>
+</ul>
+</li>
+</ul>
+<h3 id="Log-Sequence-Numbers"><a href="#Log-Sequence-Numbers" class="headerlink" title="Log Sequence Numbers"></a>Log Sequence Numbers</h3><p>WAL 中的每条日志记录都需要包含一个全局唯一的 log sequence number (LSN)，一般 LSN 单调递增。DBMS 中的不同部分都需要记录相关的 LSN 信息，举例如下：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Name</th>
+<th style="text-align:center">Where</th>
+<th style="text-align:center">Definition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><strong>flushedLSN</strong></td>
+<td style="text-align:center">memory</td>
+<td style="text-align:center">最后落盘的那个 LSN</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>pageLSN</strong></td>
+<td style="text-align:center">buffer pool page</td>
+<td style="text-align:center">最近修改page data 相关的 LSN（内存里边对页最新的修改）</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>recLSN</strong></td>
+<td style="text-align:center">buffer pool page</td>
+<td style="text-align:center">在上次落盘之后，与某 page data 相关的最老 LSN（内存里对页最老的修改）</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>lastLSN</strong></td>
+<td style="text-align:center">transaction</td>
+<td style="text-align:center">某事务最后一条日志的 LSN</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>MasterRecord</strong></td>
+<td style="text-align:center">disk</td>
+<td style="text-align:center">最近一次 checkpoint 的 LSN</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>在 buffer pool manager 中，每个页都维护着 pageLSN，而 DBMS 本身需要追踪 flushedLSN，那 么在 page x 落盘前，DBMS 必须保证以下条件成立：</p>
+<script type="math/tex; mode=display">
+pageLSN_x \leq flushedLSN</script><p><img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-M97am2_3_BVde5RcxdD%2F-M97ipBdwkZhgTVBsW_i%2FScreen%20Shot%202020-06-06%20at%204.24.25%20PM.jpg?alt=media&token=ef764239-fd24-41d6-85a8-85c78fa4325c" alt="img" style="zoom: 67%;" /></p>
+<p>当一个事务修改某 page 中的数据时，也需要更新该 page 的 pageLSN，在将操作日志写进 WAL 后，DBMS 会更新 flushedLSN 为最新写入的 LSN。</p>
+<h3 id="Normal-Execution-amp-Abort-Operations"><a href="#Normal-Execution-amp-Abort-Operations" class="headerlink" title="Normal Execution &amp; Abort Operations"></a>Normal Execution &amp; Abort Operations</h3><p>每个事务都会包含一些列的读和写操作，然后提交 (commit) 或中止 (abort)，本节我们来看下不存在故障时，事务的正常执行过程。在讨论之前，我们需要约定 4 个假设，简化问题：</p>
+<ul>
+<li><p>所有日志记录都能放进一个 page 中</p>
+</li>
+<li><p>写一个 page 到磁盘能保持原子性</p>
+</li>
+<li><p>没有 MVCC，使用严格的 2PL</p>
+</li>
+<li><p>使用 WAL 记录操作日志，buffer pool policy 为 Steal + No-Force</p>
+</li>
+</ul>
+<h4 id="Transaction-Commit"><a href="#Transaction-Commit" class="headerlink" title="Transaction Commit"></a>Transaction Commit</h4><p>当事务提交时，DBMS 先写入一条 COMMIT 记录到 WAL  ，然后将 COMMIT 及之前的日志落盘，当落盘完成后，flushedLSN 被修改为 COMMIT 记录的 LSN，同时 DBMS  将内存中 COMMIT 及其之前的日志清除。最后再写入一条 TXN-END 记录到 WAL 中，作为内部记录，对于执行提交的事务来说，COMMIT 与 TXN-END 之间没有别的操作。整个过程如下图所示：</p>
+<p><img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-M97am2_3_BVde5RcxdD%2F-M97uVDFSs5dBRd8ONce%2FScreen%20Shot%202020-06-06%20at%205.15.28%20PM.jpg?alt=media&token=73b86733-047b-45df-821a-e761fe8e6c7a" alt="img" style="zoom: 67%;" /></p>
+<h4 id="Transaction-Abort"><a href="#Transaction-Abort" class="headerlink" title="Transaction Abort"></a>Transaction Abort</h4><p>要处理事务回滚，就必须从 WAL 中找出所有与该事务相关的日志及其执行顺序。由于在 DBMS 中执行的所有事务的操作记录都会写到 WAL 中，因此为了提高效率，同一个事务的每条日志中需要记录上一条记录的 LSN，即 prevLSN，一个特殊情况是：第一条 BEGIN 记录的 prevLSN 为空。</p>
+<p>实际上中止事务是 ARIES undo 操作的一种特殊情况：回滚单个事务。过程如下图所示：</p>
+<p><img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-M97xvcl9voXTIZHRbB1%2F-M97ymeDCvhcsipRVZCR%2FScreen%20Shot%202020-06-06%20at%205.34.09%20PM.jpg?alt=media&token=102d8bb3-99e5-4bcd-a7eb-8eb2dbb55b07" alt="img" style="zoom:67%;" /></p>
+<p>可以看到，T4 的每条日志都记录着 prevLSN，当 T4 要中止时，DBMS 先向 WAL 中写入一条 ABORT 记录，然后寻着 LSN 与 prevLSN 连接串成的链表，找到之前的操作，倒序回滚，为了防止在回滚过程中再次故障导致部分操作被执行多次，回滚操作也需要写入日志中，等待所有操作回滚完毕后，DBMS 再往 WAL 中写入 TXN-END 记录，意味着所有与这个事务有关的日志都已经写完，不会再出现相关信息。那么，如何记录回滚操作呢？这就是我们马上要介绍的 CLR：</p>
+<p><strong>Compensation Log Records</strong></p>
+<p>CLR 记录的是 undo 操作，它除了记录原操作相关的记录，还记录了 undoNext 指针，指向下一个将要被 undo 的 LSN，CLR 本身也是操作记录，因此它也需要像其它操作一样写进 WAL 中，举例如下：</p>
+<p><img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-M98-0-qPoaIh_gKYQOg%2F-M98HGVM06SzmgverNb8%2FScreen%20Shot%202020-06-06%20at%206.59.13%20PM.jpg?alt=media&token=d1129325-7a00-48f3-96e7-2df2a93c1a3e" alt="img" style="zoom:50%;" /></p>
+<p>值得注意的是：CLR 永远不需要被 undone。</p>
+<h3 id="Non-fuzzy-amp-fuzzy-Checkpoints"><a href="#Non-fuzzy-amp-fuzzy-Checkpoints" class="headerlink" title="Non-fuzzy &amp; fuzzy Checkpoints"></a>Non-fuzzy &amp; fuzzy Checkpoints</h3><h4 id="Non-fuzzy-Checkpoints"><a href="#Non-fuzzy-Checkpoints" class="headerlink" title="Non-fuzzy Checkpoints"></a>Non-fuzzy Checkpoints</h4><p>使用 Non-fuzzy 的方式做 checkpoints 时，DBMS 会暂停所有工作，保证落盘的是一个 consistent snapshot，整个过程包括：</p>
+<ul>
+<li><p>停止任何新的事务</p>
+</li>
+<li><p>等待所有活跃事务执行完毕</p>
+</li>
+<li><p>将所有脏页落盘</p>
+</li>
+</ul>
+<p>显然这种方案很糟糕，不利于提升系统整体性能。</p>
+<h4 id="Slightly-Better-Checkpoints"><a href="#Slightly-Better-Checkpoints" class="headerlink" title="Slightly Better Checkpoints"></a>Slightly Better Checkpoints</h4><p>Non-fuzzy 需要停止所有事务，并且等待所有活跃事务执行完毕，我们是否有可能改善这一点？一种做法是：checkpoint 开始后，暂停写事务，阻止写事务获取数据或索引的写锁 (write latch)，如下图所示：</p>
+<p><img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-M98-0-qPoaIh_gKYQOg%2F-M98KSCcXCs76z7RZAkz%2FScreen%20Shot%202020-06-06%20at%207.13.13%20PM.jpg?alt=media&token=95178f9e-e1f3-4cb4-802c-90ba6fd0e268" alt="img" style="zoom: 67%;" /></p>
+<p>checkpoint 开始时，txn 已经获取了 page#3 的写锁，后者可以继续往 page#3 中写数据，但不能再获取其它 page  的写锁，此时 DBMS 只管扫描一遍 buffer pool 中的 pages，将所有脏页落盘。这时，部分 txn 写入的数据可能会被 checkpoint 进程一起捎带落盘，这时磁盘中的数据 snapshot 处于 inconsistent  的状态。</p>
+<p>即便如此，只要我们在 checkpoint 的时候记录哪些活跃事务正在进行，哪些数据页是脏的，故障恢复时读取 WAL 就能知道存在哪些活跃事务的数据可能被部分写出，从而恢复 inconsistent 的数据。因此整个 checkpoint 过程需要两类信息：</p>
+<ul>
+<li><p>活跃事务表：Active Transaction Table (ATT)</p>
+</li>
+<li><p>脏页表：Dirty Page Table (DPT)</p>
+</li>
+</ul>
+<p>活跃事务表中记录着活跃事务的事务 id、事务状态 (Running/Committing/Candidate for Undo)以及 lastLSN (最新的日志记录 LSN)，当事务提交或中止后，相应的记录才会被删除；脏页表记录着 buffer pool 中所有包含未提交事务写入数据的页信息，其中还记录着每个脏页最近一次落盘之后的第一条 LSN，即 recLSN。一个完整的 WAL 举例如下：</p>
+<p><img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-M98-0-qPoaIh_gKYQOg%2F-M98NRN-6TSfyXAPXrah%2FScreen%20Shot%202020-06-06%20at%207.26.17%20PM.jpg?alt=media&token=01c2e82c-19e6-41e6-80eb-763b1d14c591" alt="img" style="zoom:67%;" /></p>
+<p>在第一个 checkpoint 处：活跃事务有 T2，脏页有 P11 和 P22；在第二个 checkpoint  处，活跃事务有 T3，脏页有 P11 和 P33。</p>
+<p>这种方案尽管比 Non-fuzzy 好一些，不需要等待所有活跃事务执行完毕，但仍然需要在 checkpoint 期间暂停执行所有写事务。</p>
+<h4 id="Fuzzy-Checkpoints"><a href="#Fuzzy-Checkpoints" class="headerlink" title="Fuzzy Checkpoints"></a>Fuzzy Checkpoints</h4><p>fuzzy checkpoint 允许任何活跃事务在它落盘的过程中执行。既然允许活跃事务执行，checkpoint 在 WAL 中的记录就不是孤零零的一条，而是一个区间，因此我们需要两类记录来标记这个区间：</p>
+<ul>
+<li><p>CHECKPOINT-BEGIN： checkpoint 的起点</p>
+</li>
+<li><p>CHECKPOINT-END： checkpoint 的终点，同时包含 ATT 和 DPT 记录</p>
+</li>
+</ul>
+<p>当 checkpoint 成功完成时，CHECKPOINT-BEGIN 记录的 LSN 才被写入到数据库的 MasterRecord 中，任何在 checkpoint 之后才启动的事务不会被记录在 CHECKPOINT-END 的 ATT 中，举例如下：</p>
+<p><img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-M98P92rG4IJJTKiePCQ%2F-M98QXAvXge6jjS7MYXh%2FScreen%20Shot%202020-06-06%20at%207.39.43%20PM.jpg?alt=media&token=6525ad8f-d13b-44d5-bff4-98641bd5f758" alt="img" style="zoom:67%;" /></p>
+<p>显然实践中使用的是 fuzzy checkpoint，这也是接下来要介绍的 ARIES 的故障恢复算法的基础。</p>
+<h3 id="ARIES-Recovery-Phases"><a href="#ARIES-Recovery-Phases" class="headerlink" title="ARIES - Recovery Phases"></a><font color=red>ARIES - Recovery Phases</font></h3><p>ARIES 故障恢复一共分三步：</p>
+<ul>
+<li><p><strong>分析 (analysis)：</strong>从 WAL 中读取最近一次 checkpoint，找到 buffer pool 中相应的脏页以及故障时的活跃事务；</p>
+</li>
+<li><p><strong>重做 (redo)：</strong>从正确的日志点开始重做所有操作，包括将要中止的事务；</p>
+</li>
+<li><p><strong>撤销 (undo)：</strong>将故障前未提交的事务的操作撤销；</p>
+</li>
+</ul>
+<p>整体流程如下图所示：</p>
+<p><img src="https://2836672763-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LMjQD5UezC9P8miypMG%2F-M98RvhiFzm-uXsTLvUb%2F-M98v9nUJ0C6N0jkwkfb%2FScreen%20Shot%202020-06-06%20at%209.57.58%20PM.jpg?alt=media&token=7c0e9df5-9188-4ebd-9eaf-fa4368bc0a33" alt="img" style="zoom:67%;" /></p>
+<p>通过 MasterRecord 找到最后一个 BEGIN-CHECKPOINT 记录，然后分别进行 3 个阶段：</p>
+<ul>
+<li><p>分析：找到最后一个 checkpoint 之后哪些事务提交或中止了</p>
+</li>
+<li><p>重做：找到 DPT 中最小的 recLSN，从那里开始重做所有操作</p>
+</li>
+<li><p>撤销：WAL 最近的位置开始往回撤销所有未提交的事务操作</p>
+</li>
+</ul>
+<p><strong>Analysis Phase</strong></p>
+<p>从最近的 BEGIN-CHECKPOINT 开始往近处扫描日志：</p>
+<ul>
+<li>如果发现 TXN-END 记录，则从 ATT 中移除该事务</li>
+<li>遇到其它日志记录时<ul>
+<li>将事务放入 ATT 中，将 status 设置为 UNDO</li>
+<li>如果事务提交，将其状态修改为 COMMIT</li>
+<li>如果是数据更新记录，按需更新 DPT 以及 recLSN</li>
+</ul>
+</li>
+</ul>
+<p>当 Analysis Phase 结束时：</p>
+<ul>
+<li><p>ATT 告诉 DBMS 在发生故障时，哪些事务是活跃的</p>
+</li>
+<li><p>DPT 告诉 DBMS 在发生故障时，哪些脏数据页可能尚未写入磁盘</p>
+</li>
+</ul>
+<p><strong>Redo Phase</strong></p>
+<p>Redo Phase 的目的在于回放历史，重建崩溃那一瞬间的数据库状态，即重做所有更新操作 (包括后来发生中止事务的操作)，同时重做 CLRs。尽管 DBMS 可以通过一些手段避免不必要的读写，但本节课不讨论这些优化技术。</p>
+<p>从 DPT 中找到最小的 recLSN，从那里开始重做更新记录和 CLR，除非遇到以下两种情况：</p>
+<ul>
+<li><p>受影响的 page 不在 DPT 中</p>
+</li>
+<li><p>受影响的 page 在 DPT 中，但那条记录的 LSN 小于那个 page 的 recLSN</p>
+</li>
+</ul>
+<p>重做时，需要：</p>
+<ul>
+<li><p>重新执行日志中的操作</p>
+</li>
+<li><p>将 pageLSN 修改成日志记录的 LSN</p>
+</li>
+<li><p>不再新增操作日志，也不强制刷盘</p>
+</li>
+</ul>
+<p>在 Redo Phase 结束时，会为所有状态为 COMMIT 的事务写入 TXN-END 日志，同时将它们从 ATT 中移除。</p>
+<p><strong>Undo Phase</strong></p>
+<p>将所有 Analysis Phase 判定为 U (candidate for undo) 状态的事务的所有操作按执行顺序倒序撤销，并且为每个 undo 操作写一条 CLR。</p>
+<p><strong>Additional Crash Issues</strong></p>
+<p>如果 DBMS 在故障恢复的 Analysis Phase 崩溃怎么办？</p>
+<ul>
+<li>无所谓，再执行一次故障恢复算法就好</li>
+</ul>
+<p>如果 DBMS 在故障恢复的 Redo Phase 崩溃怎么办？</p>
+<ul>
+<li>无所谓，再重做所有操作即可，操作是幂等的</li>
+</ul>
+<p>在 Redo Phase DBMS 如何能够提高性能？</p>
+<ul>
+<li>如果数据库不会再次故障，可以异步地将数据落盘</li>
+</ul>
+<p>在 Undo Phase DBMS 如何能够提高性能？</p>
+<ul>
+<li><p>Lazy Rollback：在新的事务访问数据页时才回滚数据</p>
+</li>
+<li><p>在数据库的用户侧，避免运行长时间的事务</p>
+</li>
+</ul>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>ARIES 的核心观点回顾：</p>
+<ul>
+<li><p>WAL with Steal/No-Force</p>
+</li>
+<li><p>Fuzzy Checkpoints</p>
+</li>
+<li><p>Redo everything since the earliest dirty page</p>
+</li>
+<li><p>Undo txns that never commit</p>
+</li>
+<li><p>Write CLRs when undoing, to survive failures during restarts</p>
+</li>
+</ul>
+<p>转载：<a target="_blank" rel="noopener" href="https://zhenghe.gitbook.io/open-courses/cmu-15-445-645-database-systems/database-recovery">https://zhenghe.gitbook.io/open-courses/cmu-15-445-645-database-systems/database-recovery</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://example.com">Smartog</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2022/07/24/cmu445-Database-Recovery/">http://example.com/2022/07/24/cmu445-Database-Recovery/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">扶摇之鹏</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/database-system/">database system</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="/pluginsSrc/butterfly-extsrc/ShareJS/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="/pluginsSrc/butterfly-extsrc/ShareJS/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="https://img-blog.csdnimg.cn/9732abb7d2ec4ba09cba5cf29507e04f.jpeg" target="_blank"><img class="post-qr-code-img" src="https://img-blog.csdnimg.cn/9732abb7d2ec4ba09cba5cf29507e04f.jpeg" alt="微信"/></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="https://img-blog.csdnimg.cn/899038c3a02c4a14925da419444eb3a4.jpeg" target="_blank"><img class="post-qr-code-img" src="https://img-blog.csdnimg.cn/899038c3a02c4a14925da419444eb3a4.jpeg" alt="支付宝"/></a><div class="post-qr-code-desc">支付宝</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2022/07/24/cmu445-Distributed-Databases/"><img class="prev-cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">cmu445_Distributed_Databases</div></div></a></div><div class="next-post pull-right"><a href="/2022/07/24/cmu445-Logging-Schemes/"><img class="next-cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">cmu445_Logging_Schemes</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2022/07/12/cmu445-1/" title="cmu 14-445 1 relational model"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg2.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-12</div><div class="title">cmu 14-445 1 relational model</div></div></a></div><div><a href="/2022/07/13/cmu445-2/" title="cmu14-445 2 Advanced SQL"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-13</div><div class="title">cmu14-445 2 Advanced SQL</div></div></a></div><div><a href="/2022/07/14/cmu445-3/" title="cmu15-445-3 Data Storage"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-14</div><div class="title">cmu15-445-3 Data Storage</div></div></a></div><div><a href="/2022/07/16/cmu445-4/" title="cmu445-4 Buffer Pools"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-16</div><div class="title">cmu445-4 Buffer Pools</div></div></a></div><div><a href="/2022/07/18/cmu445-hash_table/" title="cmu445-5 Hash Table"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-18</div><div class="title">cmu445-5 Hash Table</div></div></a></div><div><a href="/2022/07/19/cmu445-Tree-Indexes/" title="cmu445-6 Tree Indexes"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-19</div><div class="title">cmu445-6 Tree Indexes</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#ARIES"><span class="toc-number">1.</span> <span class="toc-text">ARIES</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Log-Sequence-Numbers"><span class="toc-number">2.</span> <span class="toc-text">Log Sequence Numbers</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Normal-Execution-amp-Abort-Operations"><span class="toc-number">3.</span> <span class="toc-text">Normal Execution &amp; Abort Operations</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Transaction-Commit"><span class="toc-number">3.1.</span> <span class="toc-text">Transaction Commit</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Transaction-Abort"><span class="toc-number">3.2.</span> <span class="toc-text">Transaction Abort</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Non-fuzzy-amp-fuzzy-Checkpoints"><span class="toc-number">4.</span> <span class="toc-text">Non-fuzzy &amp; fuzzy Checkpoints</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Non-fuzzy-Checkpoints"><span class="toc-number">4.1.</span> <span class="toc-text">Non-fuzzy Checkpoints</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Slightly-Better-Checkpoints"><span class="toc-number">4.2.</span> <span class="toc-text">Slightly Better Checkpoints</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Fuzzy-Checkpoints"><span class="toc-number">4.3.</span> <span class="toc-text">Fuzzy Checkpoints</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ARIES-Recovery-Phases"><span class="toc-number">5.</span> <span class="toc-text">ARIES - Recovery Phases</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">6.</span> <span class="toc-text">总结</span></a></li></ol></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2022 By Smartog</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi, welcome to my <a target="_blank" rel="noopener" href="https://butterfly.js.org/">blog</a>!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="/pluginsSrc/medium-zoom/dist/medium-zoom.min.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
   window.MathJax = {
     tex: {
       inlineMath: [ ['$','$'], ["\\(","\\)"]],
