@@ -1,0 +1,252 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>AC-Key——Adaptive Caching for LSM-based Key-Value Stores | 扶摇之鹏</title><meta name="keywords" content="Key Value store"><meta name="author" content="Smartog,2369398685@qq.com"><meta name="copyright" content="Smartog"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="本文由明尼苏达大学Fenggang Wu等人于2020发表于ATC。作者结合LSM-Tree的结构特点在ARC（Adaptive Replacement Cache）的基础上提出了基于缓存效率因子的E-ARC，并通过HAC对不同类型的缓存对向进行层次化管理。作者提出的分层自适应缓存算法可以动态感知负载中key-value cache、key-pointer cache以及block cache的变">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AC-Key——Adaptive Caching for LSM-based Key-Value Stores">
+<meta property="og:url" content="http://example.com/2022/10/14/ACkey/index.html">
+<meta property="og:site_name" content="扶摇之鹏">
+<meta property="og:description" content="本文由明尼苏达大学Fenggang Wu等人于2020发表于ATC。作者结合LSM-Tree的结构特点在ARC（Adaptive Replacement Cache）的基础上提出了基于缓存效率因子的E-ARC，并通过HAC对不同类型的缓存对向进行层次化管理。作者提出的分层自适应缓存算法可以动态感知负载中key-value cache、key-pointer cache以及block cache的变">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg2.png">
+<meta property="article:published_time" content="2022-10-14T04:40:04.000Z">
+<meta property="article:modified_time" content="2022-10-14T04:42:34.569Z">
+<meta property="article:author" content="Smartog">
+<meta property="article:tag" content="Key Value store">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg2.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2022/10/14/ACkey/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/pluginsSrc/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="/pluginsSrc/@fancyapps/ui/dist/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'mediumZoom',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: '/pluginsSrc/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: '/pluginsSrc/flickr-justified-gallery/dist/fjGallery.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'AC-Key——Adaptive Caching for LSM-based Key-Value Stores',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-10-14 12:42:34'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.2.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://img-blog.csdnimg.cn/8f7b645dd13642308f79801772084d7c.jpeg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">53</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">20</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">扶摇之鹏</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">AC-Key——Adaptive Caching for LSM-based Key-Value Stores</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-10-14T04:40:04.000Z" title="发表于 2022-10-14 12:40:04">2022-10-14</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-10-14T04:42:34.569Z" title="更新于 2022-10-14 12:42:34">2022-10-14</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/paper/">paper</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="AC-Key——Adaptive Caching for LSM-based Key-Value Stores"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div><article class="post-content" id="article-container"><p>本文由明尼苏达大学Fenggang Wu等人于2020发表于ATC。作者结合LSM-Tree的结构特点在ARC（Adaptive Replacement Cache）的基础上提出了基于缓存效率因子的E-ARC，并通过HAC对不同类型的缓存对向进行层次化管理。作者提出的分层自适应缓存算法可以动态感知负载中key-value cache、key-pointer cache以及block cache的变化，根据负载变化对缓存大小进行动态调整。</p>
+<h3 id="Background"><a href="#Background" class="headerlink" title="Background"></a>Background</h3><p>由于LSM-Tree本身的结构特点，在读取操作时会伴随严重的读放大问题。解决上述问题的主要方法是使用cache，但是LSM的分层结构使得人们很难搞清楚cache一个entry所带来的开销和好处。同时为了在点查和范围查询取得平衡，cache的设计变得更为复杂。AC-Key将三种类型的cache：key-value cache，key-pointer cache，block cache整合进一个系统，并且可以根据负载自动调整三者比例。AC-Key使用了一个新的方法来衡量cache所带来的开销和收益。AC-Key是基于RocksDB实现的。从收益的角度看：不同层的Key-Value pair被cache到的收益是不一样的，cache层数越深的记录节省的IO开销越多。从开销的角度看：根据KV的大小，cache对内存的占用也不一样。点查和范围查询这两种操作对cache的要求并不一样。</p>
+<p><img src="https://raw.githubusercontent.com/Smartog/picturebed/master/ACkey/image-20221013215045367.png" alt="image-20221013215045367" style="zoom:80%;" /></p>
+<p>其中key-value类型的缓存适合点查询，key-pointer类型的缓存适合value特别大的数据，此时可以只记录一个指向value所在block的指针<SstID|BlockOffset>，Block类型的缓存适合范围查询，因为一次可以放入很多条目。现有的系统存在的问题有（1）系统缓存类型固定（2）现有缓存规则适应性不强（3）缓存的大小不能随工作负载的变化而动态调整。AC-Key综合利用了三种不同的数据类型且三种数据缓存大小可以动态调整，调整策略也是通过作者提出了缓存效率因子进行。</p>
+<p><img src="https://raw.githubusercontent.com/Smartog/picturebed/master/ACkey/image-20221013215900444.png" alt="image-20221013215900444" style="zoom: 67%;" /></p>
+<p>ARC用于DRAM中的Page替换。总体来说，ARC将cache分为两部分，一部分为新进cache(recency-cache，类似JVM的新生代),另一部分为频率cache(frequency-cache, 类似JVM的老生代)。这两部分分别是一个LRU实例。ARC的策略是，当一个数据第一次被访问的时候，它首先被缓冲到recency-cache中，当该数据再次被访问的时候，它会被迁移到frequency-cache中。</p>
+<p>关于缓存中应该存放哪些数据，作者总结了四条规律：</p>
+<ul>
+<li>应该将缓存key-value以及key-pointer的优点结合起来以更好的优化点查询；</li>
+<li>KV缓存和KP缓存有利于点查询，但是不利于范围查询，Block cache对点查询和范围查询都有利但是空间利用率低；</li>
+<li>缓存算法应该考虑缓存不同条目占用的DRAM空间以及可以节省的I/O数量；</li>
+<li>缓存算法应该对不同的工作负载进行动态调整；</li>
+</ul>
+<h3 id="AC-Key-Design"><a href="#AC-Key-Design" class="headerlink" title="AC-Key Design"></a>AC-Key Design</h3><p><img src="https://raw.githubusercontent.com/Smartog/picturebed/master/ACkey/image-20221013215946070.png" alt="image-20221013215946070" style="zoom:80%;" /></p>
+<p>AC-key由KV cache、KP cache以及Block cache组成，内部的替换策略使用作者提出的基于LRU改进的E-LRU算法。其中Block cache由Data Bock、Index Block以及Bloom Filter Block组成，整体结构如上图所示。对于数据访问，如果数据条目被第一次访问将被放在KP cache中，AC-key认为这个条目是预热条目（warm entry）。如果该条目在KP cache中被再次访问，那么将其移动到KV cache中，此时系统认为该数据条目为热条目（hot entry）。如果上边第一次被访问的数据value大小小于一个pointer的大小那么将其放入KV cache中更加划算。</p>
+<p><strong>get 操作：</strong>查询首先会查询memtable，如果命中则返回，如果没有查询KV cache命中则返回。未命中KV cahce但命中KP cache则在Block cache中查找是否存在对应的Block，如果没有则先将对应的Block读入Block cache，在Block内部如果找value则将其移入KV cache。若KV cache和KP cache都未命中，则在磁盘寻找对应的数据条目并将其移入KP cache。</p>
+<p><strong>Flush操作：</strong>如果memtable中存在比cache中更新的数据，AC-key在flush操作时会更新cache中的操作。</p>
+<p><strong>Compaction 操作：</strong>合并操作会导致部分KP cache和Block cache失效，由于合并操作需要在内存中计算新生成的block，所以可以将KP cache更新指向包含对应key的新Block，对于失效的Block，挑选与其overlapping最大的Block进行替换。</p>
+<p>为了量化不同缓存的收益，AC-key引入了缓存效率因子caching efficiency factor并用此改进LRU以及ARC。缓存效率因子$E=\frac{b}{s}$其中b是缓存该条目可以节省的IO次数，s为缓存该条目占用的缓存空间大小，一般以字节为单位。其中m为get一个key所需查找的SStable个数的函数，$f(m)$代表找到一个key需要的IO次数，$f(m)$函数取决于LSM-tree的具体实现，一般需要读取m个SStable的Bloom filter Block，最后再读一次Index Block以及Data Block，所以一般$f(m)=m+2$。其余公式如下：</p>
+<script type="math/tex; mode=display">
+b= \begin{cases}1 & \text { if block, } \\ f(m) & \text { if KV entry } \\ f(m)-1 & \text { if KP entry }\end{cases}</script><script type="math/tex; mode=display">
+m= \begin{cases}n_0 / 2 & \text { if } l=0 \\ l+n_0 & \text { if } l>=1\end{cases}</script><h4 id="E-LRU"><a href="#E-LRU" class="headerlink" title="E-LRU:"></a><strong>E-LRU:</strong></h4><p>传统的LRU在缓存替换时会选择最久未用的一个条目。E-LRU会选择最久未用的a个条目并淘汰其中缓存效率因子最小的条目。其中$a=e^v$,v通过计算从cache中采样得到的样本标准差得到。</p>
+<h4 id="HAC"><a href="#HAC" class="headerlink" title="HAC:"></a><strong>HAC:</strong></h4><p>一种可以分层调节各区域缓存大小的算法，AC-key缓存共分两层结构如下图，其中real cache存储真正的数据，ghost cache记录已被淘汰条目的元数据，占用空间相对较小。如果一边的ghost cache被命中就会增加自己real cache的容量。</p>
+<p><img src="https://raw.githubusercontent.com/Smartog/picturebed/master/ACkey/image-20221013220038930.png" alt="image-20221013220038930" style="zoom: 67%;" /></p>
+<h4 id="E-ARC"><a href="#E-ARC" class="headerlink" title="E-ARC:"></a><strong>E-ARC:</strong></h4><ul>
+<li><p>在Lower level中，单次调整长度为$\delta=kE=k\frac{b}{s}$，k用户可配置。</p>
+<ul>
+<li><p>命中Real Cache：如果命中KV Cache就将entry往MRU一边调整。如果命中KP Cache就将entry移到KV Cache中。</p>
+</li>
+<li><p>命中KV Ghost Cache：把boundary往KP Cache移动。从storage读出entry后，将entry放入KV Cache的MRU端。</p>
+</li>
+<li><p>命中KP Ghost Cache：把boundary往KV Cache移动。从storage读出entry后，将entry放入KV Cache的MRU端。</p>
+</li>
+<li><p>未命中Cache：从storage读出entry后，将entry放入KP Cache。</p>
+</li>
+</ul>
+</li>
+<li><p>在Upper Level中，Upper Level的boundary单次调整长度： $Δ=kE$</p>
+<ul>
+<li>entry淘汰后会记录在Upper Level的Ghost Point Cache，以及Lower Level的Ghost KV Cache或Ghost KP Cache。即会记录两次</li>
+<li>Block Cache淘汰掉的Block会记录在Ghost Block Cache</li>
+<li>如果Ghost Point Cache被命中，Lower Level的boundary会先调整，然后Upper Level的boundary再调整。</li>
+<li>Point Cache的变化会按如下公式分配给KP Cache和KV Cache<ul>
+<li>$\left|R_{k v}^<em>\right| \leftarrow\left|R_{k v}^</em>\right|-\Delta \frac{\left|R_{k v}^<em>\right|}{\left|R_{k v}^</em>\right|+\left|R_{k p}^*\right|}$</li>
+<li>$\left|R_{k p}^<em>\right| \leftarrow\left|R_{k p}^</em>\right|-\Delta \frac{\left|R_{k p}^<em>\right|}{\left|R_{k v}^</em>\right|+\left|R_{k p}^*\right|}$</li>
+<li>$\left|R_{k v}^<em>\right|$ 为 $K V C a c h e$ 的大小, $\left|R_{k p}^</em>\right|$ 为 $K P C a c h e$ 的大小</li>
+</ul>
+</li>
+<li>ghost cache只是为了记录对应的key是否存在，那么可以利用hash来节省存储空间<ul>
+<li>使用一个4Byte的哈希签名代替key存入Ghost Cache，但是因为碰撞会出现假阳性的问题</li>
+<li>如果entry很多时Ghost Cache依然会占用大量的空间，所以当cache命中率波动小于阈值Θ(默认为5%)则会关闭Ghost Cache，释放空间给Real Cache。当波动大于阈值Θ时重新开启Ghost Cache</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="Evaluation"><a href="#Evaluation" class="headerlink" title="Evaluation"></a>Evaluation</h3><p>AC-key基于RocksDB实现，实验设置了对照组为：AC-Key、rocksdb：默认配置，即只有Block Cache、pure-kv：只使用KV Cache、pure-kp：只使用KP Cache、offline：使用固定大小的KV Cache、KP Cache、Block Cache，三者比例为如下实验得出的最优配置。</p>
+<p><img src="https://raw.githubusercontent.com/Smartog/picturebed/master/ACkey/image-20221014101435645.png" alt="image-20221014101435645" style="zoom:80%;" /></p>
+<p><img src="https://raw.githubusercontent.com/Smartog/picturebed/master/ACkey/image-20221013220619048.png" alt="image-20221013220619048" style="zoom: 67%;" /></p>
+<p>实验结果表明，热点越是集中AC-Key的优势越是明显，AC-Key对点查性能的提升明显，在value较小时优势明显，与offline差距很小。绝大部分情况下只有Block Cache的rocksdb比pure-kv或pure-kp要好不少，而且没有和AC-Key拉开太大差距，可能Block Cache还是重要的多。下图为在YCSB上的实验结果，在D工作负载上AC-key相较于RocksDB提升最多。</p>
+<p><img src="https://raw.githubusercontent.com/Smartog/picturebed/master/ACkey/image-20221013220545947.png" alt="image-20221013220545947" style="zoom:80%;" /></p>
+<h3 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h3><p>AC-key针对LSM-tree的结构特点引入缓存效率因子改进LRU以及ARC使其可以根据负载动态调整每个缓存组件的大小，实验结果表明不同负载下AC-key相较于RocksDB有较好提升。但是实验部分感觉只有QPS指标，对空间利用率，缓存命中率，查询延迟等指标没有提及，此外LSM-tree本身就有冷热数据，最底层的数据倾向于冷数据，但是将其缓存到内存中缓存效率因子较高，是否可以增加一个松弛项$\frac{1}{l}$或者其他办法将层数对数据冷热程度的反应体现出来。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://example.com">Smartog</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2022/10/14/ACkey/">http://example.com/2022/10/14/ACkey/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">扶摇之鹏</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Key-Value-store/">Key Value store</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg2.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="/pluginsSrc/butterfly-extsrc/ShareJS/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="/pluginsSrc/butterfly-extsrc/ShareJS/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="https://img-blog.csdnimg.cn/9732abb7d2ec4ba09cba5cf29507e04f.jpeg" target="_blank"><img class="post-qr-code-img" src="https://img-blog.csdnimg.cn/9732abb7d2ec4ba09cba5cf29507e04f.jpeg" alt="微信"/></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="https://img-blog.csdnimg.cn/899038c3a02c4a14925da419444eb3a4.jpeg" target="_blank"><img class="post-qr-code-img" src="https://img-blog.csdnimg.cn/899038c3a02c4a14925da419444eb3a4.jpeg" alt="支付宝"/></a><div class="post-qr-code-desc">支付宝</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2022/10/14/Bourbon/"><img class="next-cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">From WiscKey to Bourbon A Learned Index for Log-Structured Merge Trees</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2022/08/11/nKV/" title="nKV Near-Data Processing with KV-Stores on Native Computational Storage"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg2.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-08-11</div><div class="title">nKV Near-Data Processing with KV-Stores on Native Computational Storage</div></div></a></div><div><a href="/2022/10/14/Bourbon/" title="From WiscKey to Bourbon A Learned Index for Log-Structured Merge Trees"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-10-14</div><div class="title">From WiscKey to Bourbon A Learned Index for Log-Structured Merge Trees</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#Background"><span class="toc-number">1.</span> <span class="toc-text">Background</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AC-Key-Design"><span class="toc-number">2.</span> <span class="toc-text">AC-Key Design</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#E-LRU"><span class="toc-number">2.1.</span> <span class="toc-text">E-LRU:</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#HAC"><span class="toc-number">2.2.</span> <span class="toc-text">HAC:</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#E-ARC"><span class="toc-number">2.3.</span> <span class="toc-text">E-ARC:</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Evaluation"><span class="toc-number">3.</span> <span class="toc-text">Evaluation</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Conclusion"><span class="toc-number">4.</span> <span class="toc-text">Conclusion</span></a></li></ol></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2022 By Smartog</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi, welcome to my <a target="_blank" rel="noopener" href="https://butterfly.js.org/">blog</a>!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="/pluginsSrc/medium-zoom/dist/medium-zoom.min.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.2
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, ''],
+        insertScript: [200, () => {
+          document.querySelectorAll('mjx-container:not\([display]\)').forEach(node => {
+            const target = node.parentNode
+            if (target.nodeName.toLowerCase() === 'li') {
+              target.parentNode.classList.add('has-jax')
+            } else {
+              target.classList.add('has-jax')
+            }
+          });
+        }, '', false]
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = '/pluginsSrc/mathjax/es5/tex-mml-chtml.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typeset()
+}</script></div><canvas class="fireworks" mobile="false"></canvas><script src="/pluginsSrc/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="ribbon" src="/pluginsSrc/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
