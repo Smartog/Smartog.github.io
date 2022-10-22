@@ -1,0 +1,311 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>PCIe协议学习记录 | 扶摇之鹏</title><meta name="keywords" content="PCIe"><meta name="author" content="Smartog,2369398685@qq.com"><meta name="copyright" content="Smartog"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="1 PCIe概述​        PCIe是第三代外围设备总线，英文缩写为PCIe或者PCI Express。PCIe是点对点，全双工的差分传输信号总线。点对点互连表示链路上的电气负载有限，从而使发送和接收频率可扩展到更高。PCIe目前成熟的版本有GEN1，GEN2，GEN3，GEN4和GEN5，每一代相较上一代传输速率和传输带宽都有了很大幅度的提升。PCIe每个Function的配置空间从PCI">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PCIe协议学习记录">
+<meta property="og:url" content="http://example.com/2022/10/22/PCIe/index.html">
+<meta property="og:site_name" content="扶摇之鹏">
+<meta property="og:description" content="1 PCIe概述​        PCIe是第三代外围设备总线，英文缩写为PCIe或者PCI Express。PCIe是点对点，全双工的差分传输信号总线。点对点互连表示链路上的电气负载有限，从而使发送和接收频率可扩展到更高。PCIe目前成熟的版本有GEN1，GEN2，GEN3，GEN4和GEN5，每一代相较上一代传输速率和传输带宽都有了很大幅度的提升。PCIe每个Function的配置空间从PCI">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg2.png">
+<meta property="article:published_time" content="2022-10-22T10:15:44.000Z">
+<meta property="article:modified_time" content="2022-10-22T10:19:29.268Z">
+<meta property="article:author" content="Smartog">
+<meta property="article:tag" content="PCIe">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg2.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2022/10/22/PCIe/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/pluginsSrc/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="/pluginsSrc/@fancyapps/ui/dist/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'mediumZoom',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: '/pluginsSrc/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: '/pluginsSrc/flickr-justified-gallery/dist/fjGallery.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'PCIe协议学习记录',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-10-22 18:19:29'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.2.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://img-blog.csdnimg.cn/8f7b645dd13642308f79801772084d7c.jpeg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">55</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">21</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">扶摇之鹏</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">PCIe协议学习记录</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-10-22T10:15:44.000Z" title="发表于 2022-10-22 18:15:44">2022-10-22</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-10-22T10:19:29.268Z" title="更新于 2022-10-22 18:19:29">2022-10-22</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%A6%82%E5%BF%B5/">概念</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="PCIe协议学习记录"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div><article class="post-content" id="article-container"><h3 id="1-PCIe概述"><a href="#1-PCIe概述" class="headerlink" title="1 PCIe概述"></a>1 PCIe概述</h3><p>​        PCIe是第三代外围设备总线，英文缩写为PCIe或者PCI Express。PCIe是点对点，全双工的差分传输信号总线。点对点互连表示链路上的电气负载有限，从而使发送和接收频率可扩展到更高。PCIe目前成熟的版本有GEN1，GEN2，GEN3，GEN4和GEN5，每一代相较上一代传输速率和传输带宽都有了很大幅度的提升。PCIe每个Function的配置空间从PCI的256B扩展到了4KB，但前64B（PCI Header）配置寄存器仍然是相同的。</p>
+<p>​        <strong>差分信号对：</strong>PCIe采用差分对来串行传输数据。</p>
+<p><img src="https://img-blog.csdnimg.cn/20210314150006508.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2xseHh5eTUwNw==,size_16,color_FFFFFF,t_70" alt="img" style="zoom: 50%;" /></p>
+<p>​        <strong>链路：</strong>PCIe链路是两台设备之间的物理连接。</p>
+<p><img src="https://img-blog.csdnimg.cn/20210314142509447.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2xseHh5eTUwNw==,size_16,color_FFFFFF,t_70" alt="img" style="zoom:50%;" /></p>
+<h3 id="2-PCIe带宽"><a href="#2-PCIe带宽" class="headerlink" title="2 PCIe带宽"></a>2 PCIe带宽</h3><p>​        PCIe GEN1在链路上的传输速率为2.5Gb/s。PCIe在GEN1和GEN2采用了8b/10b编码方式，也就是说链路上传输10b数据，实际传输的有效数据只有8b。对于GEN1 x1的PCIe链路，传输的有效带宽为：</p>
+<p><img src="https://img-blog.csdnimg.cn/20210314144020956.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2xseHh5eTUwNw==,size_16,color_FFFFFF,t_70" alt="img" style="zoom:50%;" /></p>
+<h3 id="3-PCIe拓扑结构"><a href="#3-PCIe拓扑结构" class="headerlink" title="3 PCIe拓扑结构"></a>3 PCIe拓扑结构</h3><p>​        PCIe主要的组件有RC（Root Complex），SW（Switch），EP（Endpoint）。RC可以和所有device进行通信，一个EP也可以和一个PCIe系统中的EP来通信（Peer-to-Peer）。<strong>RC</strong>是指连接CPU和存储器子系统以及PCIe结构的设备，可以<strong>支持一个或多个PCIe Port</strong>，下图中RC支持3个PCIe Port，每个Port连接EP或者SW，SW形成一个子层，又可以挂接其他PCIe设备。RC上的port可以进行数据交互，但协议并没有规定必须支持。<strong>SW</strong>是PCIe链路上进行转接的一类设备，拥有一个upstream prot和多个downstream port。可以将SW当作多个PCIe桥组成的设备。<strong>EP</strong>是PCIe链路的末端，有两种类型：Legacy Endpoint 和 PCIe Endpoint。<strong>传统EP</strong>支持IO事务，而且还需要能接收锁定事务。而<strong>PCIe EP</strong>不必支持IO事务和接收锁定事务，但必须支持MSI中断。</p>
+<p><img src="https://img-blog.csdnimg.cn/20210314154216906.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2xseHh5eTUwNw==,size_16,color_FFFFFF,t_70" alt="img" style="zoom:50%;" /></p>
+<h3 id="4-PCIe-Transaction"><a href="#4-PCIe-Transaction" class="headerlink" title="4 PCIe Transaction"></a>4 PCIe Transaction</h3><p>​        <strong>事务：</strong>Transaction指 requester 和 completer 之间完成一次信息传送时所需要完成的一系列或多个数据包传送的过程。PCIe支持的事务类型与PCI、PCI-X支持的事务类型相同，包括存储器读和存储器写，IO读和IO写，配置读和配置写，此外还增加了一种新事务：消息（message）。</p>
+<h4 id="4-1-PCIe-事务的分类"><a href="#4-1-PCIe-事务的分类" class="headerlink" title="4.1 PCIe 事务的分类"></a>4.1 PCIe 事务的分类</h4><p>​        PCIe事务可以分为Non-Posted 和 Posted。Non-Posted指 requester 发送TLP请求包给completer时，completer需要返回一个TLP完成数据包requester。Posted指requester 发送TLP请求事务包给 completer时，completer不需要回复TLP完成数据包给requester。TLP完成包带数据信息的称为CPLD，不带数据信息的称为CPL。</p>
+<p><img src="https://img-blog.csdnimg.cn/20210314231244580.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2xseHh5eTUwNw==,size_16,color_FFFFFF,t_70" alt="img" style="zoom:50%;" /></p>
+<p><img src="https://img-blog.csdnimg.cn/20210314232223138.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2xseHh5eTUwNw==,size_16,color_FFFFFF,t_70" alt="img" style="zoom:50%;" /></p>
+<h3 id="5-PCIe的层次结构"><a href="#5-PCIe的层次结构" class="headerlink" title="5 PCIe的层次结构"></a>5 PCIe的层次结构</h3><p>​        PICe设备的体系结构可以分为三个层次：<strong>事务层（Transaction Layer）</strong>、<strong>数据链路层（Data Link Layer）</strong>、<strong>物理层（Physical）</strong>。每一个层次又可以分为两个部分，分别为处理发送和处理接收的部分。也可以分为四个层次，将事务层以上的层次称为软件层（Software layer）。</p>
+<p><img src="https://img-blog.csdnimg.cn/20210318001722364.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2xseHh5eTUwNw==,size_16,color_FFFFFF,t_70" alt="img" style="zoom:50%;" /></p>
+<h3 id="6-PCIe数据包"><a href="#6-PCIe数据包" class="headerlink" title="6 PCIe数据包"></a>6 PCIe数据包</h3><p>​        前文已经说过PCIe之间是以数据包的形式来传输数据的，协议共定义了3类数据包。与处理层相关的是处理层数据包（TLP），与数据链路层相关的是数据链路层数据包（DLLP），与物理层相关的是物理层数据包（PLP）。TLP包和DLLP包的大小如下图所以，DW代表一个双字（32bit）,B代表一个Byte。</p>
+<p><img src="https://img-blog.csdnimg.cn/20210321193333498.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2xseHh5eTUwNw==,size_16,color_FFFFFF,t_70" alt="img" style="zoom:50%;" /></p>
+<h4 id="6-1-TLP包"><a href="#6-1-TLP包" class="headerlink" title="6.1 TLP包"></a>6.1 TLP包</h4><p>​        TLP包起源于发送者的事务层，终止于接收者的事务层。但当TLP包经过数据链路层和物理层时，这两个层次也会对TLP包进行一定的处理。</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><img src="https://img-blog.csdnimg.cn/20210318002934234.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2xseHh5eTUwNw==,size_16,color_FFFFFF,t_70" alt="img" style="zoom: 50%;" /></th>
+<th style="text-align:center"><img src="https://img-blog.csdnimg.cn/20210318010238438.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2xseHh5eTUwNw==,size_16,color_FFFFFF,t_70" alt="img" style="zoom:50%;" /></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>事务层处理：</strong></p>
+<ul>
+<li><p><strong>发送：</strong>事务层接收由软件层传来的组成TLP核心部分所需要的信息，并将数据组装成Header 和 Data（有些TLP没有DATA）。如果Header中的TD比特位为1，则根据Header和Data计算End-to-End CRC（ECRC），并将其附着在Data后面，如果TD为0，则该TLP不会有ECRC。</p>
+</li>
+<li><p><strong>接收：</strong>通过ECRC判断TLP包是否有CRC错误，如果没错，则删掉ECRC，将其余数据传输给软件层，如果存在CRC错误，则……</p>
+</li>
+</ul>
+<p><strong>数据链路层的处理：</strong></p>
+<ul>
+<li><strong>发送：</strong>数据链路层接收事务层传过来的TLP包，然后在其前面加上Sequence ID （，并根据目前所有的信息计算32bit 的CRC（LCRC），并附着在后面。</li>
+<li><strong>接收：</strong>检查TLP报的LCRC是否有CRC错误，如果有错误则丢弃TLP，然后发送NAK DLLP给Remote Device。如果没有错误，则将LCRC和Sequence ID去除，将其余数据发送给事务层，并且会发送ACK DLLP给Remote Device。</li>
+</ul>
+<p><strong>物理层的处理：</strong></p>
+<ul>
+<li><p><strong>发送：</strong>物理层接收数据链路层传过来的TLP包，然后在其前面和后面分别附加1 Byte的 Start 和 End 帧字符。接收者根据这个来检测数据包的开始和结束。</p>
+</li>
+<li><p><strong>接收：</strong>物理层将比特流经过一系列操作组装成数据包，并去除Start和End帧字符后将数据传输给数据链路层。</p>
+</li>
+</ul>
+<h4 id="6-2-DLLP包"><a href="#6-2-DLLP包" class="headerlink" title="6.2 DLLP包"></a>6.2 DLLP包</h4><p>​        DLLP包起源与发送者的数据链路层，终止于接收者的数据链路层。当DLLP包经过物理层时，物理层也会对其做一定处理。DLLP包用于链路管理功能，包括<strong>ACK/NAK</strong>协议相关的TLP确认，<strong>电源管理</strong>，<strong>流控制</strong>。<strong>DLLP包在链路上两个直接连的数据链路层之间传输（没有路由功能）</strong>，也就是在物理相连的两个PCIe设备之间传输。</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th><img src="https://img-blog.csdnimg.cn/20210319010739471.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2xseHh5eTUwNw==,size_16,color_FFFFFF,t_70" alt="img" style="zoom:50%;" /></th>
+<th><img src="https://img-blog.csdnimg.cn/20210319010810388.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2xseHh5eTUwNw==,size_16,color_FFFFFF,t_70" alt="img" style="zoom:67%;" /></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>数据链路层：</strong></p>
+<ul>
+<li>数据链路层存在多种DLLP包，数据链路层会在要发的DLLP包上附加16 bit的CRC。</li>
+</ul>
+<p><strong>物理层：</strong></p>
+<ul>
+<li>物理层接收数据链路层传过来的DLLP，然后在其前面和后面分别附加1 Byte的 Start 和 End 帧字符。接收者根据这个来检测包的开始和结束。</li>
+</ul>
+<h4 id="6-3-PLP包"><a href="#6-3-PLP包" class="headerlink" title="6.3 PLP包"></a>6.3 PLP包</h4><p>​        PLP是一种非常简单的数据包。起源于发送者的物理层，终止于接收者的物理层。PLP的大小是4 Byte的整数倍，<strong>PLP包在链路上两个直接连的数据链路层之间传输（没有路由功能）。</strong>PLP也被称为<strong>Ordered set（有序集）</strong>PLP主要用于链路训练过程（LinkTraining process），时钟容差补偿（clock tolerance compensation）。PLP包开始的第一个 Byte是 <strong>COM 字符</strong>，后面是定义PLP类型以及含有其他信息的3个或多个字符。</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th><img src="https://img-blog.csdnimg.cn/20210319012426311.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2xseHh5eTUwNw==,size_16,color_FFFFFF,t_70" alt="img" style="zoom:50%;" /></th>
+<th><img src="https://img-blog.csdnimg.cn/20210319011840368.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2xseHh5eTUwNw==,size_16,color_FFFFFF,t_70" alt="img" style="zoom:50%;" /></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="7-体系结构"><a href="#7-体系结构" class="headerlink" title="7 体系结构"></a>7 体系结构</h3><p><img src="https://img-blog.csdnimg.cn/20210321160713640.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2xseHh5eTUwNw==,size_16,color_FFFFFF,t_70" alt="img" style="zoom: 80%;" /></p>
+<h4 id="7-1-Transaction-Layer"><a href="#7-1-Transaction-Layer" class="headerlink" title="7.1 Transaction Layer"></a>7.1 Transaction Layer</h4><ul>
+<li><strong>发送：</strong>事务层接收来自软件层的数据，组装成TLP包，并根据Header中的TD位来决定是否生成ECRC。将待发送的TLP包放入VC transmit buffer，在Flow Control表示接收端有足够空间的VC receive buffer来接收后，将TLP传输给数据链路层，然后经过物理层发送出去。</li>
+<li>Flow Control后面会有章节进行介绍，简单来说就是接收设备定期的发送一种DLLP包（FCx DLLP）给发送设备，用来表示接收设备中VC receive buffer还存在多大的空间。发送设备收到DLLP，解析得到空间足够，就会发送需要发送的TLP包。<strong>也就是说物理连接的两个设备，两端的TX都会定期发送流控制DLLP包，两端的RX都会接收到，两个设备的发送部分都会知道对方设备的接收部分中VC receive buffer还存在多大的空间，从而控制发送部分是否发送TLP包。</strong></li>
+</ul>
+<p><img src="https://img-blog.csdnimg.cn/20210321183707928.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2xseHh5eTUwNw==,size_16,color_FFFFFF,t_70" alt="img" style="zoom:50%;" /></p>
+<h4 id="7-2-Data-Link-Layer"><a href="#7-2-Data-Link-Layer" class="headerlink" title="7.2 Data Link Layer"></a>7.2 Data Link Layer</h4><p>​        数据链路层主要<strong>功能</strong>是保证在各链路上发送和接收数据包时数据的完整性。在Flow Control机制下，当接收方有足够的VC receive buffer后，数据链路层将接收到事务层传输过来的TLP。然后将Sequence ID附加在TLP前面，并根据目前所有的信息（Sequence ID，TLP）计算CRC（LCRC），并附着在后面。</p>
+<ul>
+<li><strong>重传机制：</strong>Device A的数据链路层会将打包后的TLP通过物理层发送给Remote Device B，并会保留一个备份放在Replay Buffer中。如果没有错误，Device B会返回一个带 Sequence ID的ACK DLLP包给Device A，A接收到后，就认为TLP包成功到达B了（TLP的目的地不一定时B，也许需要B去转发），然后会将Replay Buffer中相应Sequence ID的TLP包删除。</li>
+<li><strong>接收TLP：</strong>接收到TLP后，会进行CRC检查，如果有错误，将会将该TLP包丢弃，并返回一个NAK给Device A。如果没有错误，将会返回一个ACK给Device A，并将TLP包的Sequence ID和LCRC去除后传输给事务层。</li>
+</ul>
+<p><img src="https://img-blog.csdnimg.cn/20210321184546468.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2xseHh5eTUwNw==,size_16,color_FFFFFF,t_70" alt="img" style="zoom: 80%;" /></p>
+<h4 id="7-3-Physical-Layer"><a href="#7-3-Physical-Layer" class="headerlink" title="7.3 Physical Layer"></a>7.3 Physical Layer</h4><p>​        物理层可以分为逻辑物理层（Logic Physical Layer）和电气物理层（Electrical Physical Layer），逻辑物理层主要指物理层的数字电路部分，电子物理层主要指物理层的模拟电路部分。<strong>功能：</strong>发送和接收数据包，完成链路训练和初始化（Link Training and Initialization）。</p>
+<h3 id="8-MRd包传输示例"><a href="#8-MRd包传输示例" class="headerlink" title="8 MRd包传输示例"></a>8 MRd包传输示例</h3><p>​        以MRd TLP包的传输为例，说明一个Non-Posted事务的TLP是如何在PCIe系统层次中处理的。</p>
+<p><img src="https://img-blog.csdnimg.cn/20210323001351345.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2xseHh5eTUwNw==,size_16,color_FFFFFF,t_70" alt="img" style="zoom: 80%;" /></p>
+<ul>
+<li><strong>Requester</strong>的软件层发送需要传送的信息给事务层；</li>
+<li>事务层将数据打包成TLP的Header（和Data，MRd TLP没有Data），并根据需要是否附加ECRC，将完成的TLP存入相应的VC transmit buffer。流控制机制确保TLP在合适的时间被发送到数据链路层;</li>
+<li>数据链路层将TLP前增加Sequence ID，并在后面附加LCRC。然后将TLP存入 Replay buffer备份，并将TLP传输给物理层。</li>
+<li>物理层将TLP增加Start 和 End 字符，然后将TLP包进行字节拆分、加扰、编码、并串转换，再通过TX发送到链路上。</li>
+<li><strong>Completer</strong>的物理层RX接收到差分信号，将信号进行并串转换，在一个弹性buffer中组装数据包，（组装好的数据已经被解码、去扰了）。然后检测并删除Start和End字符。将最后得到的TLP发送给数据链路层。</li>
+<li>数据链路层进行CRC检查。<ul>
+<li>如果没有错误，则形成ACK的DLLP包，通过物理层发送给对方。对方的数据链路层接收到ACK包后，会根据ACK包中的Sequence ID信息删除保存在Replay buffer中相应的TLP包。</li>
+<li>如果有错误，则形成NAK的DLLP包，通过物理层发送给对方。对方的数据链路层接收到NAK包后，会根据NAK包中的Sequence ID信息重新发送保存在Replay buffer中对应的TLP包</li>
+</ul>
+</li>
+<li>数据链路层删除TLP包的Sequence ID和 LCRC，将得到的TLP包发送给事务层相应的VC receive buffer。</li>
+<li>事务层检查CRC错误（如果有ECRC），如果没有错误，则将TLP包中的信息发送给软件层。</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://example.com">Smartog</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2022/10/22/PCIe/">http://example.com/2022/10/22/PCIe/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">扶摇之鹏</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/PCIe/">PCIe</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg2.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="/pluginsSrc/butterfly-extsrc/ShareJS/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="/pluginsSrc/butterfly-extsrc/ShareJS/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="https://img-blog.csdnimg.cn/9732abb7d2ec4ba09cba5cf29507e04f.jpeg" target="_blank"><img class="post-qr-code-img" src="https://img-blog.csdnimg.cn/9732abb7d2ec4ba09cba5cf29507e04f.jpeg" alt="微信"/></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="https://img-blog.csdnimg.cn/899038c3a02c4a14925da419444eb3a4.jpeg" target="_blank"><img class="post-qr-code-img" src="https://img-blog.csdnimg.cn/899038c3a02c4a14925da419444eb3a4.jpeg" alt="支付宝"/></a><div class="post-qr-code-desc">支付宝</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2022/10/22/TridentKV/"><img class="next-cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg2.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">TridentKV A Read-Optimized LSM-Tree Based KV Store via Adaptive Indexing and Space-Effificient Partitioning</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-PCIe%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">1 PCIe概述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-PCIe%E5%B8%A6%E5%AE%BD"><span class="toc-number">2.</span> <span class="toc-text">2 PCIe带宽</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-PCIe%E6%8B%93%E6%89%91%E7%BB%93%E6%9E%84"><span class="toc-number">3.</span> <span class="toc-text">3 PCIe拓扑结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-PCIe-Transaction"><span class="toc-number">4.</span> <span class="toc-text">4 PCIe Transaction</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-PCIe-%E4%BA%8B%E5%8A%A1%E7%9A%84%E5%88%86%E7%B1%BB"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 PCIe 事务的分类</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-PCIe%E7%9A%84%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84"><span class="toc-number">5.</span> <span class="toc-text">5 PCIe的层次结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-PCIe%E6%95%B0%E6%8D%AE%E5%8C%85"><span class="toc-number">6.</span> <span class="toc-text">6 PCIe数据包</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#6-1-TLP%E5%8C%85"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 TLP包</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-DLLP%E5%8C%85"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 DLLP包</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-3-PLP%E5%8C%85"><span class="toc-number">6.3.</span> <span class="toc-text">6.3 PLP包</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84"><span class="toc-number">7.</span> <span class="toc-text">7 体系结构</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#7-1-Transaction-Layer"><span class="toc-number">7.1.</span> <span class="toc-text">7.1 Transaction Layer</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-2-Data-Link-Layer"><span class="toc-number">7.2.</span> <span class="toc-text">7.2 Data Link Layer</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-3-Physical-Layer"><span class="toc-number">7.3.</span> <span class="toc-text">7.3 Physical Layer</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-MRd%E5%8C%85%E4%BC%A0%E8%BE%93%E7%A4%BA%E4%BE%8B"><span class="toc-number">8.</span> <span class="toc-text">8 MRd包传输示例</span></a></li></ol></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2022 By Smartog</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi, welcome to my <a target="_blank" rel="noopener" href="https://butterfly.js.org/">blog</a>!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="/pluginsSrc/medium-zoom/dist/medium-zoom.min.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.2
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, ''],
+        insertScript: [200, () => {
+          document.querySelectorAll('mjx-container:not\([display]\)').forEach(node => {
+            const target = node.parentNode
+            if (target.nodeName.toLowerCase() === 'li') {
+              target.parentNode.classList.add('has-jax')
+            } else {
+              target.classList.add('has-jax')
+            }
+          });
+        }, '', false]
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = '/pluginsSrc/mathjax/es5/tex-mml-chtml.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typeset()
+}</script></div><canvas class="fireworks" mobile="false"></canvas><script src="/pluginsSrc/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="ribbon" src="/pluginsSrc/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
