@@ -1,0 +1,280 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>DAOS架构 | 扶摇之鹏</title><meta name="keywords" content="DAOS"><meta name="author" content="Smartog,2369398685@qq.com"><meta name="copyright" content="Smartog"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="DAOS架构概述 DAOS是什么 分布式异步对象存储 (DAOS) 是一种开源软件定义的对象存储，专为大规模分布式非易失性内存 (NVM) 而设计。DAOS 利用存储级内存 (SCM) 和 NVM express (NVMe) 等下一代 NVM 技术，同时呈现键值存储接口并提供事务性非阻塞 I&#x2F;O、在商用硬件上具有自我修复功能的高级数据保护、端到端数据完整性、细粒度数据控制和弹性存储等功能，以优化">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DAOS架构">
+<meta property="og:url" content="http://example.com/2023/02/07/DAOS%E6%9E%B6%E6%9E%84/index.html">
+<meta property="og:site_name" content="扶摇之鹏">
+<meta property="og:description" content="DAOS架构概述 DAOS是什么 分布式异步对象存储 (DAOS) 是一种开源软件定义的对象存储，专为大规模分布式非易失性内存 (NVM) 而设计。DAOS 利用存储级内存 (SCM) 和 NVM express (NVMe) 等下一代 NVM 技术，同时呈现键值存储接口并提供事务性非阻塞 I&#x2F;O、在商用硬件上具有自我修复功能的高级数据保护、端到端数据完整性、细粒度数据控制和弹性存储等功能，以优化">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png">
+<meta property="article:published_time" content="2023-02-07T02:31:12.000Z">
+<meta property="article:modified_time" content="2023-02-07T02:34:02.691Z">
+<meta property="article:author" content="Smartog">
+<meta property="article:tag" content="DAOS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2023/02/07/DAOS%E6%9E%B6%E6%9E%84/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/pluginsSrc/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="/pluginsSrc/@fancyapps/ui/dist/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'mediumZoom',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: '/pluginsSrc/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: '/pluginsSrc/flickr-justified-gallery/dist/fjGallery.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'DAOS架构',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-02-07 10:34:02'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.2.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://img-blog.csdnimg.cn/8f7b645dd13642308f79801772084d7c.jpeg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">62</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">24</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">9</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">扶摇之鹏</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">DAOS架构</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-02-07T02:31:12.000Z" title="发表于 2023-02-07 10:31:12">2023-02-07</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-02-07T02:34:02.691Z" title="更新于 2023-02-07 10:34:02">2023-02-07</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%98%E5%82%A8%E7%B3%BB%E7%BB%9F/">存储系统</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="DAOS架构"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div><article class="post-content" id="article-container"><h2 id="DAOS架构"><a href="#DAOS架构" class="headerlink" title="DAOS架构"></a>DAOS架构</h2><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><ul>
+<li><p><strong>DAOS是什么</strong></p>
+<p>分布式异步对象存储 (DAOS) 是一种开源软件定义的对象存储，专为大规模分布式非易失性内存 (NVM) 而设计。DAOS 利用存储级内存 (SCM) 和 NVM express (NVMe) 等下一代 NVM 技术，同时呈现键值存储接口并提供事务性非阻塞 I/O、在商用硬件上具有自我修复功能的高级数据保护、端到端数据完整性、细粒度数据控制和弹性存储等功能，以优化性能和成本。</p>
+</li>
+<li><p><strong>DAOS产生背景</strong></p>
+<p>商业、政府和学术界数据密集型应用程序的出现使现有 I/O 模型超出了限制。 现代 I/O 工作负载的特征是越来越多的元数据与未对齐和零散的数据相结合。 传统的存储堆栈通过增加大量延迟和引入对齐约束来为这些工作负载提供较差的性能。 经济实惠的大容量持久内存与集成结构相结合，为重新定义存储范式和高效支持现代 I/O 工作负载提供了独特的机会。</p>
+<p>为了释放这项新技术的全部潜力，新堆栈必须从头开始采用字节粒度的无共享接口，并能够支持故障将成为常态的大规模分布式存储，同时保持低延迟和高带宽数据访问。</p>
+<p><strong>DAOS 是一个完整的 I/O 架构，它将分布在整个结构中的 SCM 和 NVMe 存储聚合到全局可访问的对象地址空间中，在不影响性能的情况下提供一致性、可用性和弹性保证。</strong></p>
+</li>
+<li><p><strong>资源地址：</strong></p>
+<ul>
+<li>DAOS文档：<a target="_blank" rel="noopener" href="https://docs.daos.io/v2.2/">https://docs.daos.io/v2.2/</a></li>
+<li>DAOS源代码GitHub地址：<a target="_blank" rel="noopener" href="https://github.com/daos-stack/daos">https://github.com/daos-stack/daos</a></li>
+<li>DAOS社区：<a target="_blank" rel="noopener" href="https://daosio.atlassian.net/wiki/spaces/DC/overview">https://daosio.atlassian.net/wiki/spaces/DC/overview</a></li>
+</ul>
+</li>
+</ul>
+<h3 id="架构"><a href="#架构" class="headerlink" title="架构"></a>架构</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><img src="https://github.com/Smartog/picturebed/blob/master/DAOS/image-20230202131921059.png?raw=true" alt="image-20230202131921059.png" style="zoom:33%;" /></th>
+<th style="text-align:center"><img src="https://raw.githubusercontent.com/Smartog/picturebed/master/DAOS/image-20230202132008074.png" alt="image-20230202132008074" style="zoom: 33%;" /></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>DAOS软件堆栈依赖于客户端-服务器模型。I/O操作将在与应用直接连接的DAOS库中处理，并由在DAOS服务器节点 (DN) 上的用户空间中运行的存储服务提供支持。</p>
+<p><img src="https://raw.githubusercontent.com/Smartog/picturebed/master/DAOS/image-20230202132218148.png" alt="image-20230202132218148" style="zoom:50%;" /></p>
+<h4 id="DAOS特征："><a href="#DAOS特征：" class="headerlink" title="DAOS特征："></a>DAOS特征：</h4><ul>
+<li><p>DAOS依赖Open Fabric Interface（OFI）实现低延迟通信，在SCM和NVMe设备上存储数据，提供的原生键-列-值存储接口可以用来移植HDFS，MPI-IO，Apache Hadoop等数据模型。通过原生DAOS API构建实现文件和目录的POSIX IO仿真层。</p>
+</li>
+<li><p>DAOS的IO操作会被记录并插入维护在SCM中的持久化索引，每个IO都被打上时间标签并与特定版本的数据集相关联。对于读操作，DAOS服务回遍历持久索引并构建一个收发RDMA描述符来在应用缓存中直接重构所需版本的数据。<strong>对写操作。。。</strong></p>
+</li>
+<li><p>SCM被直接内存映射到DAOS服务的地址空间，该空间通过直接加载/存储管理持久化索引。通过IO的不同特点，DAOS决定将IO存储在SCM或者NVMe中。应用元数据以及字节粒度等延迟敏感型IO被保存在前者中，检查点和批量数据被存储在后者中。这样DAOS可以将批量数据流存储到NVMe设备发挥NVMe带宽，同时在SCM中维护内部元数据索引。PMDK提供对于SCM的事务性访问，SPDK提供对于NVMe设备的用户空间IO。</p>
+<p><img src="https://docs.daos.io/v2.2/admin/media/image1.png" alt="img" style="zoom: 67%;" /></p>
+</li>
+</ul>
+<h4 id="DAOS目标："><a href="#DAOS目标：" class="headerlink" title="DAOS目标："></a>DAOS目标：</h4><ul>
+<li>超高细粒度、低延迟和真正零拷贝的 I/O</li>
+<li><p>非阻塞型数据和元数据操作，以支持 I/O 和计算重叠</p>
+</li>
+<li><p>先进的数据放置，以解决故障域</p>
+</li>
+<li><p>由软件管理冗余，可通过在线重建，支持复制和擦除代码</p>
+</li>
+<li><p>端到端 (E2E) 数据完整性</p>
+</li>
+<li><p>可扩展的分布式事务，提供可靠的数据一致性和自动恢复功能</p>
+</li>
+<li><p>数据集快照功能</p>
+</li>
+<li><p>安全框架，用于管理存储池的访问控制</p>
+</li>
+<li><p>软件定义存储管理，用于调配、配置、修改和监控存储池</p>
+</li>
+<li><p>通过 DAOS 数据模型和 API，为 I/O 中间件库（例如 HDF5<em>、MPI-IO</em> 和 POSIX）提供原生支持。应用无需移植代码，即可直接使用 DAOS API</p>
+</li>
+<li>Apache Spark* 集成</li>
+<li>使用发布/订阅 API，实现原生生产者/消费者工作流程</li>
+<li>数据索引和查询功能</li>
+<li>存储内计算，以减少存储和计算节点之间的数据移动</li>
+<li>容灾工具</li>
+<li>与 Lustre* 并行文件系统无缝集成，并能扩展到其他并行文件系统，从而为跨多个存储层的数据访问提供统一的命名空间</li>
+<li>数据搬运器，用于在 DAOS 池之间迁移数据集，将数据集从并行文件系统迁移到 DAOS，反之亦然</li>
+</ul>
+<h4 id="DAOS系统"><a href="#DAOS系统" class="headerlink" title="DAOS系统"></a>DAOS系统</h4><p>数据中心可能有众多计算节点通过高性能网络互联，其中一部分存储节点可以直接访问NVMe存储。DAOS涉及多个组件，这些组件可以被并置，也可以被分发。</p>
+<p>DAOS系统由系统名称标识，由多个DAOS存储节点通过网络互联。DAOS 存储节点每个节点运行一个 DAOS 服务器实例，进而为每个物理套接字启动一个 DAOS 引擎进程。DAOS 服务器的成员资格记录到系统映射中，系统映射为每个引擎进程分配一个唯一的整数排名。两个不同的 DAOS 系统由两组不相交的 DAOS 服务器组成，并且彼此不协调。DAOS 服务器是在每个存储节点的 Linux 实例（本机在物理节点上或在虚拟机或容器中）上运行的多租户守护程序。其引擎子进程通过网络导出本地连接的 SCM 和 NVM 存储。</p>
+<p>DAOS引擎内部，存储存储被静态划分到多个targets中来优化并发性。为了避免争用，每个target都有私有存储、自己的私有线程池、可以独立其他target的可直接寻址的专用网络上下文。</p>
+<ul>
+<li>SCM模块被配置在<em>AppDirect interleaved</em>模块，作为单个PMem命名空间呈现给操作系统（在fsdax模式）</li>
+<li>当每个引擎配置N个tagets时，每个target使用对应socket的1/N容量</li>
+<li>每个target也使用连接在对应socket上的NVMe设备的部分容量，例如在一个4NVMe，16targets引擎上，每个target管理1/4个NVMe disk</li>
+</ul>
+<p>target内部没有针对存储介质失效的数据保护机制，因此target是数据错误的单位。每个target都会有动态变化的状态。target同时也是性能单位，连接在其上的后端存储介质，cpu核数，网络的性能都有限制</p>
+<p>单个DAOS引擎上的target数量是可配置的，取决于底层硬件设备（具体来说取决于该引擎实例服务的SCM模块以及NVMe SSD数量）。从实践角度讲，一个引擎上的最佳target数量应该是该引擎服务的NVMe设备的整数倍。</p>
+<p><strong>资源链接：</strong></p>
+<p>DAOS安装配置</p>
+<p><a target="_blank" rel="noopener" href="https://docs.daos.io/v2.2/QSG/setup_rhel/">https://docs.daos.io/v2.2/QSG/setup_rhel/</a></p>
+<p>DAOS管理</p>
+<p><a target="_blank" rel="noopener" href="https://docs.daos.io/v2.2/admin/hardware/">https://docs.daos.io/v2.2/admin/hardware/</a></p>
+<p>DAOS测试与Benchmarking</p>
+<p><a target="_blank" rel="noopener" href="https://docs.daos.io/v2.2/testing/autotest/">https://docs.daos.io/v2.2/testing/autotest/</a></p>
+<p>词条解释：</p>
+<p><strong>SCM：</strong>即Storage Class Memory存储级内存，不仅享有DRAM的性能表现，同时拥有NAND Flash的容量优点，这样一类兼得DRAM与NAND Flash优点的创新介质，具备存储级的持久化和内存快速字节级的访问的共性。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://example.com">Smartog</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2023/02/07/DAOS%E6%9E%B6%E6%9E%84/">http://example.com/2023/02/07/DAOS%E6%9E%B6%E6%9E%84/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">扶摇之鹏</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/DAOS/">DAOS</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="/pluginsSrc/butterfly-extsrc/ShareJS/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="/pluginsSrc/butterfly-extsrc/ShareJS/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="https://img-blog.csdnimg.cn/9732abb7d2ec4ba09cba5cf29507e04f.jpeg" target="_blank"><img class="post-qr-code-img" src="https://img-blog.csdnimg.cn/9732abb7d2ec4ba09cba5cf29507e04f.jpeg" alt="微信"/></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="https://img-blog.csdnimg.cn/899038c3a02c4a14925da419444eb3a4.jpeg" target="_blank"><img class="post-qr-code-img" src="https://img-blog.csdnimg.cn/899038c3a02c4a14925da419444eb3a4.jpeg" alt="支付宝"/></a><div class="post-qr-code-desc">支付宝</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2023/02/07/DAOS%E5%AD%98%E5%82%A8%E6%A8%A1%E5%9E%8B/"><img class="prev-cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">DAOS存储模型与事务模型</div></div></a></div><div class="next-post pull-right"><a href="/2023/02/02/%E7%BA%A0%E5%88%A0%E7%A0%81%E8%B0%83%E7%A0%94/"><img class="next-cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">纠删码调研</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2023/02/07/DAOS%E5%AD%98%E5%82%A8%E6%A8%A1%E5%9E%8B/" title="DAOS存储模型与事务模型"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-02-07</div><div class="title">DAOS存储模型与事务模型</div></div></a></div><div><a href="/2023/02/07/DAOS%E6%95%85%E9%9A%9C%E6%A8%A1%E5%9E%8B/" title="DAOS故障模型"><img class="cover" src="https://cdn.jsdelivr.net/gh/jerryc127/CDN@latest/cover/default_bg3.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-02-07</div><div class="title">DAOS故障模型</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#DAOS%E6%9E%B6%E6%9E%84"><span class="toc-number">1.</span> <span class="toc-text">DAOS架构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-number">1.1.</span> <span class="toc-text">概述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9E%B6%E6%9E%84"><span class="toc-number">1.2.</span> <span class="toc-text">架构</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#DAOS%E7%89%B9%E5%BE%81%EF%BC%9A"><span class="toc-number">1.2.1.</span> <span class="toc-text">DAOS特征：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#DAOS%E7%9B%AE%E6%A0%87%EF%BC%9A"><span class="toc-number">1.2.2.</span> <span class="toc-text">DAOS目标：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#DAOS%E7%B3%BB%E7%BB%9F"><span class="toc-number">1.2.3.</span> <span class="toc-text">DAOS系统</span></a></li></ol></li></ol></li></ol></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2022 - 2023 By Smartog</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi, welcome to my <a target="_blank" rel="noopener" href="https://butterfly.js.org/">blog</a>!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="/pluginsSrc/medium-zoom/dist/medium-zoom.min.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.2
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, ''],
+        insertScript: [200, () => {
+          document.querySelectorAll('mjx-container:not\([display]\)').forEach(node => {
+            const target = node.parentNode
+            if (target.nodeName.toLowerCase() === 'li') {
+              target.parentNode.classList.add('has-jax')
+            } else {
+              target.classList.add('has-jax')
+            }
+          });
+        }, '', false]
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = '/pluginsSrc/mathjax/es5/tex-mml-chtml.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typeset()
+}</script></div><canvas class="fireworks" mobile="false"></canvas><script src="/pluginsSrc/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="ribbon" src="/pluginsSrc/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
