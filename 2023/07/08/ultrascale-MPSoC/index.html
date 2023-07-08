@@ -1,0 +1,332 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Zynq UltraScale+ MPSoC Embedded Design Tutorial | Smartog</title><meta name="keywords" content="ZYNQ"><meta name="author" content="Smartog,2369398685@qq.com"><meta name="copyright" content="Smartog"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="结合两个教程：1 Zynq vitis开发官网地址：https:&#x2F;&#x2F;xilinx.github.io&#x2F;Embedded-Design-Tutorials&#x2F;docs&#x2F;2022.2&#x2F;build&#x2F;html&#x2F;docs&#x2F;Introduction&#x2F;ZynqMPSoC-EDT&#x2F;ZynqMPSoC-EDT.html2 The_Zynq_Book_ZedBoard_Tutorials pdf The Zynq Ul">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Zynq UltraScale+ MPSoC Embedded Design Tutorial">
+<meta property="og:url" content="http://example.com/2023/07/08/ultrascale-MPSoC/index.html">
+<meta property="og:site_name" content="Smartog">
+<meta property="og:description" content="结合两个教程：1 Zynq vitis开发官网地址：https:&#x2F;&#x2F;xilinx.github.io&#x2F;Embedded-Design-Tutorials&#x2F;docs&#x2F;2022.2&#x2F;build&#x2F;html&#x2F;docs&#x2F;Introduction&#x2F;ZynqMPSoC-EDT&#x2F;ZynqMPSoC-EDT.html2 The_Zynq_Book_ZedBoard_Tutorials pdf The Zynq Ul">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://raw.githubusercontent.com/Smartog/picturebed/master/img-3b64b597fee35c020340ae93261acc41.jpg">
+<meta property="article:published_time" content="2023-07-08T15:11:08.000Z">
+<meta property="article:modified_time" content="2023-07-08T15:13:28.113Z">
+<meta property="article:author" content="Smartog">
+<meta property="article:tag" content="ZYNQ">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/Smartog/picturebed/master/img-3b64b597fee35c020340ae93261acc41.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2023/07/08/ultrascale-MPSoC/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/pluginsSrc/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="/pluginsSrc/@fancyapps/ui/dist/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'mediumZoom',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: '/pluginsSrc/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: '/pluginsSrc/flickr-justified-gallery/dist/fjGallery.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Zynq UltraScale+ MPSoC Embedded Design Tutorial',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-07-08 23:13:28'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.2.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/touxiang.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">77</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">28</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">Smartog</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">Zynq UltraScale+ MPSoC Embedded Design Tutorial</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-07-08T15:11:08.000Z" title="发表于 2023-07-08 23:11:08">2023-07-08</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-07-08T15:13:28.113Z" title="更新于 2023-07-08 23:13:28">2023-07-08</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/FPGA/">FPGA</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Zynq UltraScale+ MPSoC Embedded Design Tutorial"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div><article class="post-content" id="article-container"><p>结合两个教程：<br>1 Zynq vitis开发官网地址：<a target="_blank" rel="noopener" href="https://xilinx.github.io/Embedded-Design-Tutorials/docs/2022.2/build/html/docs/Introduction/ZynqMPSoC-EDT/ZynqMPSoC-EDT.html">https://xilinx.github.io/Embedded-Design-Tutorials/docs/2022.2/build/html/docs/Introduction/ZynqMPSoC-EDT/ZynqMPSoC-EDT.html</a><br>2 The_Zynq_Book_ZedBoard_Tutorials pdf</p>
+<p><strong>The Zynq UltraScale+ MPSoC PS block has three major processing units:</strong></p>
+<ul>
+<li><strong>Application processing unit:</strong> Quad-core Arm® Cortex™-A53 MPCore processors</li>
+<li><strong>Real time processing unit:</strong> Dual-core Arm Cortex™-R5F MPCore processors</li>
+<li><strong>Graphics processing unit:</strong> Arm Mali™ 400 MP2 GPU with pixel and geometry processor and 64 KB L2 cache.</li>
+<li><strong>Platform management unit (PMU):</strong> Xilinx MicroBlaze™ based platform management unit</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/Smartog/picturebed/master/fpga/image-20230706140340352.png" alt="image-20230706140340352" style="zoom: 80%;" /></p>
+<h2 id="Vivado设计流程"><a href="#Vivado设计流程" class="headerlink" title="Vivado设计流程"></a>Vivado设计流程</h2><p>在Vivado中，左侧的导航栏除了项目管理器，剩下的IP Integrator、Simulation、RTL Analysis、Synthesis、Implementation和Program and Debug功能分别如下。了解每个功能模块在整个开发流程中的作用有助于加深对项目的理解：</p>
+<ol>
+<li><strong>IP Integrator：</strong>IP Integrator是Vivado中的一个工具，用于进行系统级集成。它提供了图形化的界面，用于将不同的IP核和设计模块进行连接和配置，以构建整个系统的设计。IP Integrator简化了设计流程，使得设计人员能够更轻松地实现复杂的系统集成。</li>
+<li><strong>Simulation</strong>：Simulation（仿真）是在Vivado中进行功能验证和验证设计正确性的过程。它使用测试向量或仿真测试台来模拟设计的行为，以验证设计的功能和预期行为。仿真功能允许设计人员在实际部署之前对设计进行验证和调试。</li>
+<li><strong>RTL Analysis：</strong>RTL Analysis（RTL分析）是Vivado中的一个工具，<strong>用于对RTL（Register Transfer Level）设计进行分析</strong>。它可以对设计进行时序分析、资源占用分析、时钟域分析等，以评估设计的性能、资源利用和时序要求。</li>
+<li><strong>Synthesis：</strong>Synthesis（综合）是<strong>将RTL设计代码转换为门级网表的过程</strong>。在Vivado中，Synthesis工具会将设计描述转换为适合目标FPGA设备的门级网表，同时应用优化技术以提高电路性能和资源利用。</li>
+<li><strong>Implementation：</strong>Implementation（实现）是在综合后执行物理布局、布线和时序优化等操作的过程。在Vivado中，Implementation工具会<strong>将综合后的门级网表进行物理布局和布线</strong>，同时进行时序分析和优化，以满足设计的时序约束和目标设备的资源利用。</li>
+<li><strong>Program and Debug：</strong>Program and Debug（编程和调试）是<strong>将生成的比特流文件加载到目标FPGA设备上并进行调试的过程</strong>。在Vivado中，Program and Debug功能允许设计人员将设计通过JTAG或其他接口编程到FPGA设备，并使用调试工具进行调试、观察信号和验证设计的功能和性能。</li>
+</ol>
+<p>这些功能在Vivado中代表了设计流程的不同阶段和操作，从系统级集成到仿真、分析、综合、实现和调试，帮助设计人员完成设计的各个方面，并确保设计的正确性和性能。</p>
+<h3 id="vivado中各个文件类型及作用："><a href="#vivado中各个文件类型及作用：" class="headerlink" title="vivado中各个文件类型及作用："></a>vivado中各个文件类型及作用：</h3><p>source里边可以看到.v、.bd、.xci文件</p>
+<p><img src="https://raw.githubusercontent.com/Smartog/picturebed/master/fpga/2023-07-06%2020-50-46%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2023-07-06 20-50-46 的屏幕截图" style="zoom: 67%;" /></p>
+<p><img src="https://raw.githubusercontent.com/Smartog/picturebed/master/fpga/2023-07-06%2020-50-52%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2023-07-06 20-50-52 的屏幕截图" style="zoom: 67%;" /></p>
+<ul>
+<li><strong>.v文件: </strong>.v文件用于存储和描述硬件描述语言（Verilog HDL或VHDL）的代码，描述电路的逻辑行为和结构。这些文件包含了电路的逻辑描述，包括组合逻辑、时序逻辑、模块定义和信号连接等。</li>
+<li><strong>.bd文件: </strong>.bd文件也是Vivado中的Block Design文件，用于描述和定义Block Design设计。用于图形化地构建FPGA设计，包括设计模块、IP核、连接关系和参数设置等。.bd文件通常是一个设计模块的Block Design，可以在更大的设计中进行复用。（在xsa中出现的叫bda文件）</li>
+<li><strong>.xci文件:</strong> .xci文件是Xilinx IP核的配置文件，包含了IP核的配置参数和选项。它用于设置IP核的功能、接口、寄存器等，并可以与其他设计模块进行关联和集成。.xci文件是IP核的可编辑配置文件，可以在Vivado中进行编辑和定制。</li>
+<li><strong>.xdc文件:</strong> Xilinx Design Constraints（约束）文件，用于指定和定义设计中的各种约束条件。这些约束条件包括时序约束、管脚约束、时钟约束等，以确保设计在实现和运行时满足特定的要求。.xdc文件是一个文本文件，包含了约束的语法和语义，可以在设计过程中手动编写或自动生成。</li>
+<li><strong>.xpr文件：</strong>.xpr文件是Vivado项目文件的扩展名，它包含了整个Vivado项目的设计和配置信息。.xpr文件是一个综合的归档文件，包含了设计文件、约束文件、IP核配置、工具设置和生成比特流文件等信息。通过打开.xpr文件，可以恢复和管理完整的Vivado项目。</li>
+<li><strong>.xsa文件:</strong> 在vivado中file—Export—Export Hardware生成，.xsa文件是Xilinx System Archive的缩写，是Vivado中用于保存和共享整个项目的设计和配置信息的文件。.xsa文件是一个归档文件，包含了设计文件、约束文件、IP核配置和生成比特流文件等。通过.xsa文件，可以在不同的Vivado环境中加载和重建整个项目。</li>
+</ul>
+<h2 id="Vitis-ZYNQ开发"><a href="#Vitis-ZYNQ开发" class="headerlink" title="Vitis ZYNQ开发"></a>Vitis ZYNQ开发</h2><p><img src="https://raw.githubusercontent.com/Smartog/picturebed/master/fpga/2023-07-07%2009-33-37%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2023-07-07 09-33-37 的屏幕截图" style="zoom: 67%;" /></p>
+<h3 id="Creating-a-New-Embedded-Project-with-Zynq-UltraScale-MPSoC"><a href="#Creating-a-New-Embedded-Project-with-Zynq-UltraScale-MPSoC" class="headerlink" title="Creating a New Embedded Project with Zynq UltraScale+ MPSoC"></a>Creating a New Embedded Project with Zynq UltraScale+ MPSoC</h3><p>创建一个Zynq PS系统作为嵌入式顶层设计</p>
+<ul>
+<li><p><strong>Design Input and Output files：</strong>项目不需要任何输入输出，我们将创建一个MPSoC的PS系统，不会用到任何的PL IP资源，所以项目不需要经历implementation和bitstream generation阶段。</p>
+</li>
+<li><p><strong>Starting Your Design：</strong>创建一个RTL项目，选择目标开发板。</p>
+</li>
+<li><p><strong>Creating a Block Design Project：</strong>在Vivado IP integrator对话中创建Block Design，添加想要使用的IP核，这里只用到了Zynq 的PS端，所以只添加了 <strong>Zynq UltraScale+ MPSoC IP</strong>资源。</p>
+</li>
+<li><p><strong>Managing the Zynq UltraScale+ Processing System in Vivado：</strong>双击添加的PS IP核，可以看到内部的各种资源，和官方提供的文档中的资源图基本一致。</p>
+<p><img src="https://xilinx.github.io/Embedded-Design-Tutorials/docs/2022.2/build/html/_images/image151.png" alt="../../../_images/image151.png" style="zoom: 33%;" /></p>
+<ul>
+<li><p>默认情况下PS没有任何外设连接。退出IP资源查看窗口，Run Block Automation 提示可以自动连接资源。点击 <strong>Run Block Automation</strong> ，接受默认的处理器系统选项并进行默认的引脚连接。</p>
+</li>
+<li><p>再次点击PS IP核，可以看到内部✔的资源已被使用。点击绿色IO外设，可以看到具体的资源配置界面：IO外设、Clock、DDR配置、PS-PL配置。</p>
+</li>
+<li><p>由于教程不适用PL资源，可以将PS-PL configuration中的<strong>AXI HPM0 FPD</strong> and <strong>AXI HPM1 FPD</strong>高速数据传输和通信接口取消勾选（通过这两个高性能主设备接口，PS可以与PL中的IP核进行高速数据交换，实现复杂的数据处理、协同计算或加速计算等应用）。其他接口的作用：</p>
+<p><img src="https://raw.githubusercontent.com/Smartog/picturebed/master/fpga/image-20230706172412531.png" alt="image-20230706172412531" style="zoom: 50%;" /></p>
+</li>
+</ul>
+</li>
+<li><p><strong>Validating the Design, Creating the Wrapper, and Generating the Block Design：</strong>块设计提供所有 IP 配置和块连接信息。 Vivado 可以在运行综合和实现之前验证模块设计。如果设计有错误，这可以帮助节省时间。 验证后，从模块设计生成源文件，以便合成器可以使用和处理它们。 您还需要为模块设计生成包装器，因为 Vivado 要求设计顶层是 HDL 文件。</p>
+<ul>
+<li>Block Diagram图中右键点击Validate Design或者F6。在<strong>Block Design——Hierarchy</strong>中右键edt_zcu104，选择<strong>Create HDL Wrapper</strong>。选择<strong>Let Vivado Manage Wrapper and auto-update</strong>，点击OK，将生成<strong>edt_zcu102_wrapper</strong>。</li>
+<li>Flow Navigator -&gt; IP INTEGRATOR中选择<strong>Generate Block Design</strong>，选择<strong>Global</strong>，点击<strong>Generate</strong>.选择“ <strong>Generate Output Products</strong>”时，Vivado 工具会自动生成处理器子系统的 XDC 文件（XDC文件提供时序约束、管脚约束、时钟约束、约束检查）。</li>
+<li>生成完成后，点击OK，点击<strong>IP Sources</strong>，可以看到Generate Block Design的输出结果。</li>
+</ul>
+</li>
+<li><p><strong>Exporting Hardware：</strong>在vivado顶部的菜单栏选择<strong>File→ Export → Export Hardware</strong>，点击Next。在输出窗口选择<strong>Pre-synthesis</strong>、点击next。输出XSA文件名、输出路径，点击next。单击“finish”，在指定路径下生成硬件平台.xsa文件。它将作为下一个示例的输入文件。</p>
+<ul>
+<li>对于嵌入式设计而言，pre-synthesis XSA 和post-implementation XSA的区别在于是否包含bitstream文件。如果在 Vitis IDE 中运行应用程序，可以在运行应用程序之前将比特流配置到硬件。如果在xsa文件中存在bitstream文件，vitis会默认使用它。如果不包含bitstream文件，或者想使用其他的bitstream文件，可以在vitis IDE中指定bitstream路径。</li>
+<li>XSA中的文件</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/Smartog/picturebed/master/fpga/2023-07-06%2021-37-55%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2023-07-06 21-37-55 的屏幕截图" style="zoom:50%;" /></p>
+</li>
+</ul>
+<h3 id="Building-Standalone-Software-for-PS-Subsystems"><a href="#Building-Standalone-Software-for-PS-Subsystems" class="headerlink" title="Building Standalone Software for PS Subsystems"></a>Building Standalone Software for PS Subsystems</h3><p>上边我们将目标平台的硬件设计导出了XSA，如上图所示，里边包含了硬件Block设计和描述、PS系统初始化、以及Bitstream（如果有的话）。现在我们把生成的XSA文件导出到Vitis IDE中。</p>
+<p><strong>我们将完成以下实验：</strong></p>
+<ul>
+<li>从XSA中创建平台项目。第一阶段引导加载程序 (FSBL) 和 PMU（平台管理单元）的 PMU 固件将作为该平台项目中的引导组件创建。通过PMU的功能和控制，Zynq芯片的处理系统部分能够进行有效的电源管理、温度监测、时钟管理和重置控制。</li>
+<li>为应用程序处理单元 (APU) 创建裸机应用程序。</li>
+<li>为 APU 和实时处理单元 (RPU) 创建系统项目。</li>
+</ul>
+<h4 id="Example2-Creating-a-Platform-Project-Using-Vitis-IDE"><a href="#Example2-Creating-a-Platform-Project-Using-Vitis-IDE" class="headerlink" title="Example2 Creating a Platform Project Using Vitis IDE"></a>Example2 Creating a Platform Project Using Vitis IDE</h4><p><strong>描述：</strong>我们要创建一个platform项目，项目会从XSA文件中读取硬件信息，并包含前文提到的PS中各处理单元的运行时环境。开发的软件应用程序可以连接到这个平台项目生成的各个Libraries库。<br><strong>输入：</strong> hardware handoff XSA file (<code>edt_zcu102_wrapper.xsa</code>)<br><strong>输出：</strong>Standalone BSP libraries for Arm Cortex-A53、Boot components (FSBL: <code>zynqmp.elf</code> and PMUFW: <code>pmufw.elf</code>)</p>
+<ul>
+<li><p><strong>首先在Arm Cortex-A53上创建一个standalone domain。</strong></p>
+<p><img src="https://xilinx.github.io/Embedded-Design-Tutorials/docs/2022.2/build/html/_images/image22.png" alt="../../../_images/image22.png" style="zoom: 33%;" /></p>
+</li>
+<li><p><strong>点击finish，vitis将生成platform。可以看到有下面domain：</strong></p>
+<p><img src="https://raw.githubusercontent.com/Smartog/picturebed/master/fpga/2023-07-07%2009-05-53%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2023-07-07 09-05-53 的屏幕截图"></p>
+</li>
+<li><p><strong>构建项目。右击platform项目，点击build project。</strong>项目构建过程构建standalone BSP、FSBL 和 PMUFW。 FSBL 和 PMUFW 有自己的 BSP。构建过程需要一些时间。构建完成在每个domain下会生成一些.c .o文件。</p>
+</li>
+</ul>
+<h4 id="Example3-Running-the-“Hello-World”-Application-from-Arm-Cortex-A53"><a href="#Example3-Running-the-“Hello-World”-Application-from-Arm-Cortex-A53" class="headerlink" title="Example3 Running the “Hello World” Application from Arm Cortex-A53"></a>Example3 Running the “Hello World” Application from Arm Cortex-A53</h4><p><strong>描述：</strong>在构建的platform基础上创建“hello world”应用程序。将学习如何管理电路板设置、进行电缆连接、通过 PC 连接到电路板，以及使用 Vitis IDE 中的系统调试器在 JTAG 模式下从 Arm Cortex-A53 处理器运行简单的“Hello World”软件应用程序 。<br><strong>输入：</strong>上一步platform构建生成的standalone BSP libraries<br><strong>输出：</strong>针对 Arm Cortex-A53的hello.elf（.elf 文件是将源代码编译成可执行文件后的结果，它在嵌入式系统和 FPGA 开发中起着关键的作用，用于直接运行程序、调试代码以及进行板级验证和集成测试。）</p>
+<ul>
+<li><p><strong>连接电源、jtag usb线、设置开发板JTAG启动模式</strong></p>
+</li>
+<li><p>右键file选择<strong>File → New → Application Project</strong>，next，随后如下操作。随后点击finish。</p>
+<p>| Screen                      | System Properties               | Settings                      |<br>| —————————————- | ———————————————- | ——————————————- |<br>| Platform                    | Select platform from repository | zcu102_edt                    |<br>| Application project details | Application project name        | hello_a53                     |<br>|                             | System project name             | hello_a53_system              |<br>|                             | Target processor                | psu_cortexa53_0               |<br>| Domain                      | Domain                          | standalone on psu_cortexa53_0 |<br>| Templates                   | Available templates             | Hello World                   |</p>
+</li>
+<li><p><strong>运行 hello world程序：</strong>先右击hello_a53_systrem，选择build project，在右键下面的hello_a53，Run as → Run Configurations 然后 右击 <strong>Xilinx Application Debugger</strong> 选择 <strong>New Configuration</strong>，自动生成的<code>Debugger_hello_a53-Default</code>，点击<strong>Run</strong>.</p>
+<p><img src="https://raw.githubusercontent.com/Smartog/picturebed/master/fpga/2023-07-07%2010-03-20%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2023-07-07 10-03-20 的屏幕截图" style="zoom:67%;" /></p>
+</li>
+<li><p>Jtag接口应该会输出hello world等信息。在 Zynq UltraScale 评估板上执行上述软件应用程序无需下载比特流。 Arm Cortex-A53 四核已存在于处理系统中。 该系统运行简单应用程序的基本初始化是通过设备初始化 Tcl 脚本完成的。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Xilinx Zynq MP First Stage Boot Loader </span><br><span class="line">Release 2022.2   Jul  7 2023  -  01:08:55</span><br><span class="line">PMU-FW is not running, certain applications may not be supported.</span><br><span class="line">Hello World!!</span><br><span class="line">Successfully ran Hello World application</span><br><span class="line">********end********</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p><strong>一些概念：</strong><br><strong>Domain：</strong>可以是standalone BSP、Linux OS、第三方OS如FreeRTOS。我们可以创建多个应用程序在domain上运行。domain与平台中的单个处理器或同构处理器集群（例如：A53_0 或 A53）关联。<br><strong>Board Support Package：</strong>板支持包 (BSP) 是给定硬件平台或板的支持代码，有助于在加电时进行基本初始化，并帮助软件应用程序在其上运行。<br><strong>Standalone BSP：</strong>Standalone 是一个简单的低级软件层。 它提供对基本处理器功能（例如缓存、中断和异常）以及托管环境的基本处理器功能的访问。 这些基本功能包括标准输入/输出、分析、中止和退出。 它是一个单线程半托管环境</p>
+<h4 id="Example4-Running-the-“Hello-World”-Application-from-Arm-Cortex-R5"><a href="#Example4-Running-the-“Hello-World”-Application-from-Arm-Cortex-R5" class="headerlink" title="Example4 Running the “Hello World” Application from Arm Cortex-R5"></a>Example4 Running the “Hello World” Application from Arm Cortex-R5</h4><p><strong>描述：</strong>我们将在Arm Cortex-R5上运行hello world代码。同样的我们的platform中的PS系统包含了R5，所以我们首先要创建一个R5的Domain，然后才能创建运行在R5上的应用程序。<br><strong>输入：</strong>zcu102_edt platform with standalone domain on Arm Cortex-A53<br><strong>输出：</strong>zcu102_edt platform with standalone domain on Arm Cortex-A53 and Cortex-R5F processors</p>
+<ul>
+<li><strong>创建Arm R5的domain：</strong>首先我们点击platform project中的.spr项目文件，可以看到目前都有哪些domain。我们点击+创建一个新的ARM R5的domain，新的domain将出现在platform spr文件中。</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/Smartog/picturebed/master/fpga/2023-07-07%2010-47-02%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2023-07-07 10-47-02 的屏幕截图" style="zoom: 50%;" /></p>
+<p><img src="https://raw.githubusercontent.com/Smartog/picturebed/master/fpga/2023-07-07%2011-02-28%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2023-07-07 11-02-28 的屏幕截图" style="zoom:50%;" /></p>
+<ul>
+<li><p><strong>创建R5的hello world程序：</strong>这里的步骤和之前类似，点击File → New → Application Project，选择之前的platform，输出application项目名称，选择Target processor为psu_cortexr5_0，domain为standalone_r5，选择hello world模板。创建application完成后，选择hello_r5_system，点击🔨图标构建项目。</p>
+</li>
+<li><p><strong>在Arm 5上运行hello world代码：</strong>选择hello_r5，右键Run as → Run Configurations，右键Xilinx Application Debugger，New Configuration，将自动生成应用debug配置。点击<strong>Run</strong>，在Jtag窗口中将输出信息。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Connected to /dev/ttyUSB3 at 115200</span><br><span class="line">Xilinx Zynq MP First Stage Boot Loader </span><br><span class="line">Release 2022.2   Jul  7 2023  -  01:08:55</span><br><span class="line">PMU-FW is not running, certain applications may not be supported.</span><br><span class="line">Hello World from r5</span><br><span class="line">Successfully ran Hello World application</span><br><span class="line">********end R5********</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h4 id="Example5-Using-System-Project-to-Manage-Multiple-Applications-in-the-Vitis-IDE"><a href="#Example5-Using-System-Project-to-Manage-Multiple-Applications-in-the-Vitis-IDE" class="headerlink" title="Example5 Using System Project to Manage Multiple Applications in the Vitis IDE"></a>Example5 Using System Project to Manage Multiple Applications in the Vitis IDE</h4><p><strong>描述：</strong>Vitis可以将需要同时运行的项目组织在一个系统项目中。当Arm Cortex-A53, Arm Cortex-R5F, or MicroBlaze soft 处理器需要同时运行时，采用统一的系统组织方式进行Debug会很方便。这个例子我们将创建一个hello_system项目,这个项目包含运行在Arm A5上的hello world，同时包含运行在R5上的hello world。我们将修改“Hello World”应用程序源代码。 导入为 Arm Cortex-R5F 准备的源代码。 调整链接描述文件。<br><strong>输入：</strong>（1）Platform: zcu102_edt with standalone domains for Arm Cortex-A53 and Arm Cortex-R5F；（2）Source code for Arm Cortex-R5F<br><strong>输出：</strong>System project hello_system that includes hello_a53 and testapp_r5 applications</p>
+<ul>
+<li><p><strong>创建hello_system系统项目：</strong> 创建流程和example3类似，System project name为hello_system。Application project name为hello_sys_a53，修改helloworld.c代码。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">print(<span class="string">&quot;Hello World from APU\n\r&quot;</span>);</span><br></pre></td></tr></table></figure>
+<p>Arm A53为APU的处理单元。选择hello_sys_a53，点击编译，console将输出以下内容。<strong>hello_sys_a53.elf</strong>文件将在Debug文件夹生成。.elf文件是在Vitis中生成的可执行文件，用于存储已编译和链接的嵌入式软件程序。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Finished building target: hello_sys_a53.elf</span><br><span class="line">Invoking: ARM v8 Print Size</span><br><span class="line">aarch64-none-elf-size hello_sys_a53.elf  |tee &quot;hello_sys_a53.elf.size&quot;</span><br><span class="line">   text	   data	    bss	    dec	    hex	filename</span><br><span class="line">  30300	   2048	  20668	  53016	   cf18	hello_sys_a53.elf</span><br><span class="line">Finished building: hello_sys_a53.elf.size</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>在同一系统项目中为基于 R5 的 RPU 处理单元创建自定义裸机应用程序：</strong>右键hello_system系统项目，选择Add Application Project，应用名为testapp_r5，Target processor为psu_cortexr5_0，Domain为standalone_r5，模板为Empty application(C)。在新建的testapp_r5应用导入官方提供的模板程序。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="type">int</span> Status;</span><br><span class="line">    <span class="comment">//设置并初始化Uart</span></span><br><span class="line">    Status = <span class="built_in">PsUartSetup</span>(&amp;InterruptController, &amp;UartPs, </span><br><span class="line">    UART_DEVICE_ID, UART_INT_IRQ_ID);</span><br><span class="line">	<span class="keyword">if</span> (Status != XST_SUCCESS) &#123;</span><br><span class="line">		<span class="built_in">xil_printf</span>(<span class="string">&quot;UART Interrupt application Failed\r\n&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> XST_FAILURE;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">while</span>(<span class="number">1</span>)</span><br><span class="line">    &#123;<span class="comment">//不断发送hello world消息，并在等待中断事件时进入低功耗状态</span></span><br><span class="line">    	<span class="built_in">printf</span>(<span class="string">&quot;\nHello World from R5-0 displayed on UART-1\n&quot;</span>);</span><br><span class="line">    	<span class="comment">//警用异常中断</span></span><br><span class="line">    	<span class="built_in">Xil_ExceptionDisable</span>();</span><br><span class="line">    	<span class="comment">//这是一条汇编指令，表示将处理器置于等待状态，直到有中断事件发生</span></span><br><span class="line">    	<span class="function"><span class="keyword">asm</span> <span class="title">volatile</span> <span class="params">(<span class="string">&quot;wfi&quot;</span>)</span></span>;</span><br><span class="line">    	<span class="comment">//重新使能中断异常</span></span><br><span class="line">    	<span class="built_in">Xil_ExceptionEnable</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> XST_SUCCESS;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>修改 testapp_r5 的链接描述文件：</strong>当两个应用程序需要同时运行时，它们不能使用冲突的资源。他们不应该是彼此的记忆空间。他们应该使用自己的外围设备，或者按时间共享外围设备。在此步骤中，通过更新链接描述文件来分配内存空间。</p>
+<ul>
+<li>lscript.ld文件（或称为linker script）是链接器脚本文件，用于指定程序的内存布局和链接规则。链接器根据lscript.ld文件中的规则来决定代码和数据在内存中的分配和排列。</li>
+<li>将psu_r5_ddr_0_MEM_0的起始地址和大小修改为0x80000000,0x10000000。编译testapp_r5。 成功后Debug文件夹将生成<code>testapp_r5.elf</code> 。</li>
+</ul>
+</li>
+<li><p><strong>分配UART接口：</strong>ZCU104/2应该都有一个USB-TO-QUAD-UART Bridge IC，我们让A5用UART0，R5使用UART1，这需要对standalone_r5 bsp配置进行小修改。这里修改了R5 domain的stdin和stdout。</p>
+<p><img src="https://raw.githubusercontent.com/Smartog/picturebed/master/fpga/2023-07-07%2016-28-00%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2023-07-07 16-28-00 的屏幕截图" style="zoom: 50%;" /></p>
+</li>
+<li><p><strong>运行hello_system项目：</strong>右键hello_system，Run As → Launch Hardware，输出两个UART以及XSCT Console中可以发现fsbl.elf、hello_sys_a53.elf、testapp_r5.elf被成功下载。</p>
+</li>
+</ul>
+<h4 id="Example6-Debugging-Standalone-Applications-with-the-Vitis-Debugger"><a href="#Example6-Debugging-Standalone-Applications-with-the-Vitis-Debugger" class="headerlink" title="Example6 Debugging Standalone Applications with the Vitis Debugger"></a>Example6 Debugging Standalone Applications with the Vitis Debugger</h4><p>描述：Vitis debugger能够查看程序执行时发生的情况。 您可以设置断点或观察点来停止处理器、单步执行程序、查看程序变量和堆栈以及查看系统中内存的内容。</p>
+<p>右键hello_a53项目，<strong>Debug As→ Launch on Hardware → Single Application Debug</strong>.</p>
+<h3 id="Building-and-Debugging-Linux-Applications"><a href="#Building-and-Debugging-Linux-Applications" class="headerlink" title="Building and Debugging Linux Applications"></a>Building and Debugging Linux Applications</h3><p>关于如何利用vitis开发linux应用程序的内容见官网:<br><a target="_blank" rel="noopener" href="https://xilinx.github.io/Embedded-Design-Tutorials/docs/2022.2/build/html/docs/Introduction/ZynqMPSoC-EDT/6-build-linux-sw-for-ps.html">https://xilinx.github.io/Embedded-Design-Tutorials/docs/2022.2/build/html/docs/Introduction/ZynqMPSoC-EDT/6-build-linux-sw-for-ps.html</a><br>主要是使用PetaLinux创建Linux镜像和应用，主要内容为：</p>
+<ul>
+<li>Create a Linux boot image with PetaLinux.</li>
+<li>Create simple Linux applications with the Vitis IDE.</li>
+<li>Run and debug using the Vitis IDE.</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://example.com">Smartog</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2023/07/08/ultrascale-MPSoC/">http://example.com/2023/07/08/ultrascale-MPSoC/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">Smartog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/ZYNQ/">ZYNQ</a></div><div class="post_share"><div class="social-share" data-image="https://raw.githubusercontent.com/Smartog/picturebed/master/img-3b64b597fee35c020340ae93261acc41.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="/pluginsSrc/butterfly-extsrc/ShareJS/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="/pluginsSrc/butterfly-extsrc/ShareJS/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="https://img-blog.csdnimg.cn/9732abb7d2ec4ba09cba5cf29507e04f.jpeg" target="_blank"><img class="post-qr-code-img" src="https://img-blog.csdnimg.cn/9732abb7d2ec4ba09cba5cf29507e04f.jpeg" alt="微信"/></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="https://img-blog.csdnimg.cn/899038c3a02c4a14925da419444eb3a4.jpeg" target="_blank"><img class="post-qr-code-img" src="https://img-blog.csdnimg.cn/899038c3a02c4a14925da419444eb3a4.jpeg" alt="支付宝"/></a><div class="post-qr-code-desc">支付宝</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2023/07/06/linux-commond/"><img class="next-cover" src="https://raw.githubusercontent.com/Smartog/picturebed/master/img-a6fc1290619a7baea605c9c79412d4a2.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">linux新机配置ssh gcc git nvidia驱动 换源 docker cuda opencv</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Vivado%E8%AE%BE%E8%AE%A1%E6%B5%81%E7%A8%8B"><span class="toc-number">1.</span> <span class="toc-text">Vivado设计流程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#vivado%E4%B8%AD%E5%90%84%E4%B8%AA%E6%96%87%E4%BB%B6%E7%B1%BB%E5%9E%8B%E5%8F%8A%E4%BD%9C%E7%94%A8%EF%BC%9A"><span class="toc-number">1.1.</span> <span class="toc-text">vivado中各个文件类型及作用：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Vitis-ZYNQ%E5%BC%80%E5%8F%91"><span class="toc-number">2.</span> <span class="toc-text">Vitis ZYNQ开发</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Creating-a-New-Embedded-Project-with-Zynq-UltraScale-MPSoC"><span class="toc-number">2.1.</span> <span class="toc-text">Creating a New Embedded Project with Zynq UltraScale+ MPSoC</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Building-Standalone-Software-for-PS-Subsystems"><span class="toc-number">2.2.</span> <span class="toc-text">Building Standalone Software for PS Subsystems</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Example2-Creating-a-Platform-Project-Using-Vitis-IDE"><span class="toc-number">2.2.1.</span> <span class="toc-text">Example2 Creating a Platform Project Using Vitis IDE</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Example3-Running-the-%E2%80%9CHello-World%E2%80%9D-Application-from-Arm-Cortex-A53"><span class="toc-number">2.2.2.</span> <span class="toc-text">Example3 Running the “Hello World” Application from Arm Cortex-A53</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Example4-Running-the-%E2%80%9CHello-World%E2%80%9D-Application-from-Arm-Cortex-R5"><span class="toc-number">2.2.3.</span> <span class="toc-text">Example4 Running the “Hello World” Application from Arm Cortex-R5</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Example5-Using-System-Project-to-Manage-Multiple-Applications-in-the-Vitis-IDE"><span class="toc-number">2.2.4.</span> <span class="toc-text">Example5 Using System Project to Manage Multiple Applications in the Vitis IDE</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Example6-Debugging-Standalone-Applications-with-the-Vitis-Debugger"><span class="toc-number">2.2.5.</span> <span class="toc-text">Example6 Debugging Standalone Applications with the Vitis Debugger</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Building-and-Debugging-Linux-Applications"><span class="toc-number">2.3.</span> <span class="toc-text">Building and Debugging Linux Applications</span></a></li></ol></li></ol></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2022 - 2023 By Smartog</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi, welcome to my <a target="_blank" rel="noopener" href="https://butterfly.js.org/">blog</a>!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="/pluginsSrc/medium-zoom/dist/medium-zoom.min.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.2
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, ''],
+        insertScript: [200, () => {
+          document.querySelectorAll('mjx-container:not\([display]\)').forEach(node => {
+            const target = node.parentNode
+            if (target.nodeName.toLowerCase() === 'li') {
+              target.parentNode.classList.add('has-jax')
+            } else {
+              target.classList.add('has-jax')
+            }
+          });
+        }, '', false]
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = '/pluginsSrc/mathjax/es5/tex-mml-chtml.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typeset()
+}</script></div><canvas class="fireworks" mobile="false"></canvas><script src="/pluginsSrc/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="ribbon" src="/pluginsSrc/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
