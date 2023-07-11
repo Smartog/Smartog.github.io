@@ -1,0 +1,241 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Vitis Vivado开发自定义IP核流程——以自定义呼吸灯IP核为例 | Smartog</title><meta name="keywords" content="Zynq"><meta name="author" content="Smartog,2369398685@qq.com"><meta name="copyright" content="Smartog"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="自定义IP核自定义LED IP核，控制PL LED呈现呼吸灯的效果，且PS可以通过AXI接口来控制呼吸灯的开关和呼吸的频率。  IP核设计下边是第三方设计好的呼吸灯Verilog代码，大概原理为调整占空比控制LED灯的呼吸效果。 1234567891011121314151617181920212223242526272829303132333435363738394041424344454647">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Vitis Vivado开发自定义IP核流程——以自定义呼吸灯IP核为例">
+<meta property="og:url" content="http://example.com/2023/07/11/zynq-Vitis-Vivado-CustomIP/index.html">
+<meta property="og:site_name" content="Smartog">
+<meta property="og:description" content="自定义IP核自定义LED IP核，控制PL LED呈现呼吸灯的效果，且PS可以通过AXI接口来控制呼吸灯的开关和呼吸的频率。  IP核设计下边是第三方设计好的呼吸灯Verilog代码，大概原理为调整占空比控制LED灯的呼吸效果。 1234567891011121314151617181920212223242526272829303132333435363738394041424344454647">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://raw.githubusercontent.com/Smartog/picturebed/master/img-91c6a55525b25b0bc9ed2b3dee91024f.jpg">
+<meta property="article:published_time" content="2023-07-11T15:00:36.000Z">
+<meta property="article:modified_time" content="2023-07-11T15:15:11.648Z">
+<meta property="article:author" content="Smartog">
+<meta property="article:tag" content="Zynq">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/Smartog/picturebed/master/img-91c6a55525b25b0bc9ed2b3dee91024f.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2023/07/11/zynq-Vitis-Vivado-CustomIP/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/pluginsSrc/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="/pluginsSrc/@fancyapps/ui/dist/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'mediumZoom',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: '/pluginsSrc/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: '/pluginsSrc/flickr-justified-gallery/dist/fjGallery.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Vitis Vivado开发自定义IP核流程——以自定义呼吸灯IP核为例',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-07-11 23:15:11'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.2.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/touxiang.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">79</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">29</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">Smartog</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">Vitis Vivado开发自定义IP核流程——以自定义呼吸灯IP核为例</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-07-11T15:00:36.000Z" title="发表于 2023-07-11 23:00:36">2023-07-11</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-07-11T15:15:11.648Z" title="更新于 2023-07-11 23:15:11">2023-07-11</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/FPGA/">FPGA</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Vitis Vivado开发自定义IP核流程——以自定义呼吸灯IP核为例"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div><article class="post-content" id="article-container"><h3 id="自定义IP核"><a href="#自定义IP核" class="headerlink" title="自定义IP核"></a>自定义IP核</h3><p>自定义LED IP核，控制PL LED呈现呼吸灯的效果，且PS可以通过AXI接口来控制呼吸灯的开关和呼吸的频率。</p>
+<p><img src="https://raw.githubusercontent.com/Smartog/picturebed/master/fpga/image-20230709192907640.png" alt="image-20230709192907640" style="zoom:67%;" /></p>
+<h4 id="IP核设计"><a href="#IP核设计" class="headerlink" title="IP核设计"></a>IP核设计</h4><p>下边是第三方设计好的呼吸灯Verilog代码，大概原理为调整占空比控制LED灯的呼吸效果。</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// File name:           breath_led</span></span><br><span class="line"><span class="comment">// Descriptions:        自定义IP核-呼吸灯</span></span><br><span class="line"><span class="comment">//*******************************************************************************</span></span><br><span class="line"><span class="keyword">module</span> breath_led(</span><br><span class="line">    <span class="keyword">input</span>          sys_clk        , <span class="comment">//时钟信号</span></span><br><span class="line">    <span class="keyword">input</span>          sys_rst_n      , <span class="comment">//复位信号</span></span><br><span class="line">    <span class="keyword">input</span>          sw_ctrl        , <span class="comment">//呼吸灯开关控制信号 1：亮 0:灭</span></span><br><span class="line">    <span class="keyword">input</span>          set_en         , <span class="comment">//设置呼吸灯频率设置使能信号</span></span><br><span class="line">    <span class="keyword">input</span>   [<span class="number">9</span>:<span class="number">0</span>]  set_freq_step  , <span class="comment">//设置呼吸灯频率变化步长</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">output</span>         led              <span class="comment">//LED</span></span><br><span class="line">);</span><br><span class="line"><span class="comment">//**                  main code</span></span><br><span class="line"><span class="comment">//*****************************************************</span></span><br><span class="line"><span class="comment">//parameter define</span></span><br><span class="line"><span class="keyword">parameter</span>  START_FREQ_STEP = <span class="number">10&#x27;d100</span>; <span class="comment">//设置频率步长初始值</span></span><br><span class="line"><span class="comment">//reg define</span></span><br><span class="line"><span class="keyword">reg</span>  [<span class="number">15</span>:<span class="number">0</span>]  period_cnt  ;      <span class="comment">//周期计数器</span></span><br><span class="line"><span class="keyword">reg</span>  [<span class="number">9</span>:<span class="number">0</span>]   freq_step   ;      <span class="comment">//呼吸灯频率间隔步长</span></span><br><span class="line"><span class="keyword">reg</span>  [<span class="number">15</span>:<span class="number">0</span>]  duty_cycle  ;      <span class="comment">//设置高电平占空比的计数点</span></span><br><span class="line"><span class="keyword">reg</span>          inc_dec_flag;      <span class="comment">//用于表示高电平占空比的计数值,是递增还是递减</span></span><br><span class="line">                                <span class="comment">//为1时表示占空比递减,为0时表示占空比递增</span></span><br><span class="line"><span class="comment">//wire define</span></span><br><span class="line"><span class="keyword">wire</span>         led_t       ;</span><br><span class="line"><span class="comment">//将周期信号计数值与占空比计数值进行比较，以输出驱动led的PWM信号</span></span><br><span class="line"><span class="keyword">assign</span> led_t = ( period_cnt &lt;= duty_cycle ) ? <span class="number">1&#x27;b1</span> : <span class="number">1&#x27;b0</span> ;</span><br><span class="line"><span class="keyword">assign</span> led = led_t &amp; sw_ctrl;</span><br><span class="line"></span><br><span class="line"><span class="comment">//周期信号计数器在0-50_000之间计数</span></span><br><span class="line"><span class="keyword">always</span> @ (<span class="keyword">posedge</span> sys_clk) <span class="keyword">begin</span></span><br><span class="line">    <span class="keyword">if</span> (!sys_rst_n)</span><br><span class="line">        period_cnt &lt;= <span class="number">16&#x27;d0</span>;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(!sw_ctrl)</span><br><span class="line">        period_cnt &lt;= <span class="number">16&#x27;d0</span>;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>( period_cnt == <span class="number">16&#x27;d50_000</span> )</span><br><span class="line">        period_cnt &lt;= <span class="number">16&#x27;d0</span>;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        period_cnt &lt;= period_cnt + <span class="number">16&#x27;d1</span>;</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//设置频率间隔</span></span><br><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> sys_clk) <span class="keyword">begin</span></span><br><span class="line">    <span class="keyword">if</span>(!sys_rst_n)</span><br><span class="line">        freq_step &lt;= START_FREQ_STEP;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(set_en) <span class="keyword">begin</span></span><br><span class="line">        <span class="keyword">if</span>(set_freq_step == <span class="number">0</span>)</span><br><span class="line">            freq_step &lt;= <span class="number">10&#x27;d1</span>;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span>(set_freq_step &gt;= <span class="number">10&#x27;d1_000</span>)</span><br><span class="line">            freq_step &lt;= <span class="number">10&#x27;d1_000</span>;</span><br><span class="line">        <span class="keyword">else</span>    </span><br><span class="line">            freq_step &lt;= set_freq_step;</span><br><span class="line">    <span class="keyword">end</span>        </span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//设定高电平占空比的计数值</span></span><br><span class="line"><span class="keyword">always</span> @(<span class="keyword">posedge</span> sys_clk) <span class="keyword">begin</span></span><br><span class="line">    <span class="keyword">if</span> (sys_rst_n == <span class="number">1&#x27;b0</span>) <span class="keyword">begin</span></span><br><span class="line">        duty_cycle &lt;= <span class="number">16&#x27;d0</span>;</span><br><span class="line">        inc_dec_flag &lt;= <span class="number">1&#x27;b0</span>;</span><br><span class="line">    <span class="keyword">end</span>     </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(!sw_ctrl) <span class="keyword">begin</span>          <span class="comment">//呼吸灯开关关闭时，信号清零</span></span><br><span class="line">        duty_cycle &lt;= <span class="number">16&#x27;d0</span>;</span><br><span class="line">        inc_dec_flag &lt;= <span class="number">1&#x27;b0</span>;</span><br><span class="line">    <span class="keyword">end</span>    </span><br><span class="line">    <span class="comment">//每次计数完了一个周期，就调节占空比计数值</span></span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>( period_cnt == <span class="number">16&#x27;d50_000</span> ) <span class="keyword">begin</span></span><br><span class="line">        <span class="keyword">if</span>( inc_dec_flag ) <span class="keyword">begin</span>  <span class="comment">//占空比递减</span></span><br><span class="line">            <span class="keyword">if</span>( duty_cycle == <span class="number">16&#x27;d0</span> )     </span><br><span class="line">                inc_dec_flag &lt;= <span class="number">1&#x27;b0</span>;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span>(duty_cycle &lt; freq_step)</span><br><span class="line">                duty_cycle &lt;= <span class="number">16&#x27;d0</span>;</span><br><span class="line">            <span class="keyword">else</span>    </span><br><span class="line">                duty_cycle &lt;= duty_cycle - freq_step;</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">begin</span>  <span class="comment">//占空比递增</span></span><br><span class="line">            <span class="keyword">if</span>( duty_cycle &gt;= <span class="number">16&#x27;d50_000</span> )  </span><br><span class="line">                inc_dec_flag &lt;= <span class="number">1&#x27;b1</span>;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                duty_cycle &lt;= duty_cycle + freq_step;</span><br><span class="line">        <span class="keyword">end</span> </span><br><span class="line">    <span class="keyword">end</span> </span><br><span class="line">    <span class="keyword">else</span>  <span class="comment">//未计数完一个周期时，占空比保持不变</span></span><br><span class="line">        duty_cycle &lt;= duty_cycle ;</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"><span class="keyword">endmodule</span></span><br></pre></td></tr></table></figure>
+<p>==上述verilog代码实现的呼吸灯涉及的输入输出和参数如下：==<br><strong>Input：</strong><br>    sys_clk          , //时钟信号<br>    sys_rst_n      , //复位信号<br>    sw_ctrl          , //呼吸灯开关控制信号 1：亮 0:灭<br>    set_en           , //设置呼吸灯频率设置使能信号<br>    set_freq_step  , //设置呼吸灯频率变化步长<br><strong>Output：</strong><br>    led              //LED<br><strong>Parameters：</strong><br>    parameter  START_FREQ_STEP = 10’d100; //设置频率步长初始值</p>
+<p><strong>1 新建IP</strong></p>
+<p>打开Vivado 选择manage IP，选择保存IP的路径</p>
+<p>tools—create and package new IP </p>
+<p>配置IP名称，接口等信息</p>
+<p><img src="https://raw.githubusercontent.com/Smartog/picturebed/master/fpga/2023-07-10%2017-03-49%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2023-07-10 17-03-49 的屏幕截图" style="zoom: 50%;" /></p>
+<p><img src="https://raw.githubusercontent.com/Smartog/picturebed/master/fpga/2023-07-10%2017-05-46%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2023-07-10 17-05-46 的屏幕截图" style="zoom:50%;" /></p>
+<p>IP Catalog— user Reposity—AXI Peripheral —自定义IP—右击—edit in IP packager </p>
+<p><img src="https://raw.githubusercontent.com/Smartog/picturebed/master/fpga/2023-07-10%2017-09-56%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2023-07-10 17-09-56 的屏幕截图" style="zoom:50%;" /></p>
+<p><strong>2 修改代码</strong></p>
+<p>vivado自动创建.v实例化了AXI4，里边可以找到定义的寄存器</p>
+<p><img src="https://raw.githubusercontent.com/Smartog/picturebed/master/fpga/2023-07-10%2018-44-23%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2023-07-10 18-44-23 的屏幕截图" style="zoom:50%;" /></p>
+<p>右键breath_led_IP_v1_0，add Sources，新建一个.v文件准备实现自定义IP核逻辑。</p>
+<p>添加呼吸灯模块代码后，需要在breath_led_IP_v1_0_S01_AXI_inst中例化呼吸灯IP核，并添加参数。</p>
+<p><img src="https://raw.githubusercontent.com/Smartog/picturebed/master/fpga/2023-07-10%2018-44-23%20.png" alt="2023-07-10 18-44-23 " style="zoom:67%;" /></p>
+<p><img src="https://raw.githubusercontent.com/Smartog/picturebed/master/fpga/2023-07-10%2018-56-15%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2023-07-10 18-56-15 的屏幕截图" style="zoom:50%;" /></p>
+<p>完成后在breath_led_IP_v1_0中例化breath_led_IP_v1_0_S01_AXI，添加参数。<br>定义led 和 申明START_FREQ_STEP，以及后续例化中补充接口和参数</p>
+<p><img src="https://raw.githubusercontent.com/Smartog/picturebed/master/fpga/2023-07-10%2019-02-40%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2023-07-10 19-02-40 的屏幕截图" style="zoom:50%;" /></p>
+<p>点击Run Sythesized对模块综合，检查代码是否错误</p>
+<p><strong>3 打包IP核</strong></p>
+<p>回到Package IP界面</p>
+<p>compatibility 添加支持的开发板、修改Customization Parameters定制参数</p>
+<p><img src="https://raw.githubusercontent.com/Smartog/picturebed/master/fpga/2023-07-10%2019-10-38%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2023-07-10 19-10-38 的屏幕截图" style="zoom:50%;" /></p>
+<p>Re-Package IP，自此，之前创建的IP核打包完成</p>
+<h4 id="vivado硬件设计"><a href="#vivado硬件设计" class="headerlink" title="vivado硬件设计"></a>vivado硬件设计</h4><p>创建一个工程</p>
+<p>在Setting—IP—Repository中添加之前创建的IP项目，添加完成后在Ip Catalog中也可以右键修改</p>
+<p><img src="https://raw.githubusercontent.com/Smartog/picturebed/master/fpga/2023-07-10%2019-18-58%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2023-07-10 19-18-58 的屏幕截图" style="zoom:50%;" /></p>
+<p><img src="https://raw.githubusercontent.com/Smartog/picturebed/master/fpga/2023-07-10%2019-20-17%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2023-07-10 19-20-17 的屏幕截图" style="zoom:50%;" /></p>
+<p>添加Zynq处理器以及自定义IP核，验证连接没有出错后</p>
+<p>在Design Sources中右键system，Generate output product，然后点击Create HDL Wrapper</p>
+<p><img src="https://raw.githubusercontent.com/Smartog/picturebed/master/fpga/2023-07-10%2019-48-20%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2023-07-10 19-48-20 的屏幕截图" style="zoom:50%;" /></p>
+<p>验证无误后，生成bitstream文件</p>
+<p>导出包含bitstream的xsa文件</p>
+<h4 id="vitis软件设计"><a href="#vitis软件设计" class="headerlink" title="vitis软件设计"></a>vitis软件设计</h4><p>三个不同的文件路径都可以看到IP核对应代码：</p>
+<p>export/CustomIP_led/hw/drivers/breath_led_ip_v1_0</p>
+<p>hw/drivers/breath_led_ip_v1_0</p>
+<p>psu_cortexa53_0/standalone_domain/bsp/psu_cortexa53_0/libsrc/breath_led_ip_v1_0</p>
+<p>1 利用导出的xsa新建平台</p>
+<p>2 新建空项目,创建main.c文件</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;xparameters.h&quot;</span> <span class="comment">//定义了IP核的基地址</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;breath_led_IP.h&quot;</span> <span class="comment">//定义了读写IP核的函数接口，本质是重新定义Xil_out()</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;xil_io.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;stdio.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">//对参数进行宏定义，降低阅读复杂度</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> LED_IP_BASEADDR XPAR_BREATH_LED_IP_0_S01_AXI_BASEADDR</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> LED_IP_REG0 	BREATH_LED_IP_S01_AXI_SLV_REG0_OFFSET</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> LED_IP_REG1 	BREATH_LED_IP_S01_AXI_SLV_REG1_OFFSET</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">	<span class="comment">//打开呼吸灯开关</span></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;led user ip test!\n&quot;</span>);</span><br><span class="line">	<span class="built_in">BREATH_LED_IP_mWriteReg</span>(LED_IP_BASEADDR,LED_IP_REG1,<span class="number">0x800003e8</span>);<span class="comment">//配置频率</span></span><br><span class="line">	<span class="built_in">BREATH_LED_IP_mWriteReg</span>(LED_IP_BASEADDR,LED_IP_REG0,<span class="number">0x00000001</span>);<span class="comment">//打开LED</span></span><br><span class="line">	<span class="comment">//sleep(5);</span></span><br><span class="line">	<span class="comment">//BREATH_LED_IP_mWriteReg(LED_IP_BASEADDR,LED_IP_REG0,0x00000000);</span></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="修改IP核："><a href="#修改IP核：" class="headerlink" title="修改IP核："></a>修改IP核：</h4><p>修改.v文件</p>
+<p>File Group、Review and Package、Run Sythesized检查错误、Re-Package重新封装IP</p>
+<p>Show IP Status、Upgrade Selected、在对话框中选择Generate output Products</p>
+<p>由于这里只是测试一下修改IP核从LED寄存器中读取数据，所以就不需要修改顶层设计了</p>
+<p>直接生成bitstream文件</p>
+<p>导出硬件xsa，包含bitstream文件，覆盖老版本xsa文件</p>
+<p>回到vitis，platform，右键，update Hardware Specification</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://example.com">Smartog</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2023/07/11/zynq-Vitis-Vivado-CustomIP/">http://example.com/2023/07/11/zynq-Vitis-Vivado-CustomIP/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">Smartog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Zynq/">Zynq</a></div><div class="post_share"><div class="social-share" data-image="https://raw.githubusercontent.com/Smartog/picturebed/master/img-91c6a55525b25b0bc9ed2b3dee91024f.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="/pluginsSrc/butterfly-extsrc/ShareJS/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="/pluginsSrc/butterfly-extsrc/ShareJS/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="https://img-blog.csdnimg.cn/9732abb7d2ec4ba09cba5cf29507e04f.jpeg" target="_blank"><img class="post-qr-code-img" src="https://img-blog.csdnimg.cn/9732abb7d2ec4ba09cba5cf29507e04f.jpeg" alt="微信"/></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="https://img-blog.csdnimg.cn/899038c3a02c4a14925da419444eb3a4.jpeg" target="_blank"><img class="post-qr-code-img" src="https://img-blog.csdnimg.cn/899038c3a02c4a14925da419444eb3a4.jpeg" alt="支付宝"/></a><div class="post-qr-code-desc">支付宝</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2023/07/11/zynq-PS-gpio-PLled/"><img class="next-cover" src="https://raw.githubusercontent.com/Smartog/picturebed/master/img-91c6a55525b25b0bc9ed2b3dee91024f.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Zynq PS通过GPIO点亮PL LED、PL中断触发</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2023/07/11/zynq-PS-gpio-PLled/" title="Zynq PS通过GPIO点亮PL LED、PL中断触发"><img class="cover" src="https://raw.githubusercontent.com/Smartog/picturebed/master/img-91c6a55525b25b0bc9ed2b3dee91024f.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-07-11</div><div class="title">Zynq PS通过GPIO点亮PL LED、PL中断触发</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89IP%E6%A0%B8"><span class="toc-number">1.</span> <span class="toc-text">自定义IP核</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#IP%E6%A0%B8%E8%AE%BE%E8%AE%A1"><span class="toc-number">1.1.</span> <span class="toc-text">IP核设计</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#vivado%E7%A1%AC%E4%BB%B6%E8%AE%BE%E8%AE%A1"><span class="toc-number">1.2.</span> <span class="toc-text">vivado硬件设计</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#vitis%E8%BD%AF%E4%BB%B6%E8%AE%BE%E8%AE%A1"><span class="toc-number">1.3.</span> <span class="toc-text">vitis软件设计</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BF%AE%E6%94%B9IP%E6%A0%B8%EF%BC%9A"><span class="toc-number">1.4.</span> <span class="toc-text">修改IP核：</span></a></li></ol></li></ol></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2022 - 2023 By Smartog</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi, welcome to my <a target="_blank" rel="noopener" href="https://butterfly.js.org/">blog</a>!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="/pluginsSrc/medium-zoom/dist/medium-zoom.min.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.2
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, ''],
+        insertScript: [200, () => {
+          document.querySelectorAll('mjx-container:not\([display]\)').forEach(node => {
+            const target = node.parentNode
+            if (target.nodeName.toLowerCase() === 'li') {
+              target.parentNode.classList.add('has-jax')
+            } else {
+              target.classList.add('has-jax')
+            }
+          });
+        }, '', false]
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = '/pluginsSrc/mathjax/es5/tex-mml-chtml.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typeset()
+}</script></div><canvas class="fireworks" mobile="false"></canvas><script src="/pluginsSrc/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="ribbon" src="/pluginsSrc/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
