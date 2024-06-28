@@ -1,0 +1,257 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Tiny-GPU开源项目 | Smartog</title><meta name="keywords" content="GPU"><meta name="author" content="Smartog,2369398685@qq.com"><meta name="copyright" content="Smartog"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="项目地址 Tiny-GPU架构图 Tiny-GPU工作方式Tiny GPU以单核的方式工作，启动内核需要以下步骤：  在全局程序内存中加载内核程序 在数据内存中加载必要的数据 在设备控制寄存器中设置启动的线程数量 通过将启动信号拉高，启动内核Tiny-GPU组成部分GPU本身包括以下几个部分： 设备控制寄存器：保存内核在GPU中的执行方式（例如需要启动的线程数量thread_count）； 调度器">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Tiny-GPU开源项目">
+<meta property="og:url" content="http://example.com/2024/06/28/Tiny-GPU/index.html">
+<meta property="og:site_name" content="Smartog">
+<meta property="og:description" content="项目地址 Tiny-GPU架构图 Tiny-GPU工作方式Tiny GPU以单核的方式工作，启动内核需要以下步骤：  在全局程序内存中加载内核程序 在数据内存中加载必要的数据 在设备控制寄存器中设置启动的线程数量 通过将启动信号拉高，启动内核Tiny-GPU组成部分GPU本身包括以下几个部分： 设备控制寄存器：保存内核在GPU中的执行方式（例如需要启动的线程数量thread_count）； 调度器">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://raw.githubusercontent.com/Smartog/picturebed/master/img-91c6a55525b25b0bc9ed2b3dee91024f.jpg">
+<meta property="article:published_time" content="2024-06-28T13:45:17.000Z">
+<meta property="article:modified_time" content="2024-06-28T13:51:46.744Z">
+<meta property="article:author" content="Smartog">
+<meta property="article:tag" content="GPU">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/Smartog/picturebed/master/img-91c6a55525b25b0bc9ed2b3dee91024f.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2024/06/28/Tiny-GPU/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/pluginsSrc/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="/pluginsSrc/@fancyapps/ui/dist/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'mediumZoom',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: '/pluginsSrc/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: '/pluginsSrc/flickr-justified-gallery/dist/fjGallery.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Tiny-GPU开源项目',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-06-28 21:51:46'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.2.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/touxiang.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">80</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">30</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">12</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">Smartog</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">Tiny-GPU开源项目</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-06-28T13:45:17.000Z" title="发表于 2024-06-28 21:45:17">2024-06-28</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-06-28T13:51:46.744Z" title="更新于 2024-06-28 21:51:46">2024-06-28</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/GPU%E3%80%81%E5%BC%80%E6%BA%90%E9%A1%B9%E7%9B%AE/">GPU、开源项目</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Tiny-GPU开源项目"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div><article class="post-content" id="article-container"><p><a target="_blank" rel="noopener" href="https://github.com/adam-maj/tiny-gpu?tab=readme-ov-file">项目地址</a></p>
+<h3 id="Tiny-GPU架构图"><a href="#Tiny-GPU架构图" class="headerlink" title="Tiny-GPU架构图"></a>Tiny-GPU架构图</h3><p><img src="https://github.com/adam-maj/tiny-gpu/raw/master/docs/images/gpu.png" alt="GPU" style="zoom: 33%;" /></p>
+<h3 id="Tiny-GPU工作方式"><a href="#Tiny-GPU工作方式" class="headerlink" title="Tiny-GPU工作方式"></a>Tiny-GPU工作方式</h3><p>Tiny GPU以单核的方式工作，启动内核需要以下步骤：</p>
+<ul>
+<li>在全局程序内存中加载内核程序</li>
+<li>在数据内存中加载必要的数据</li>
+<li>在设备控制寄存器中设置启动的线程数量</li>
+<li>通过将启动信号拉高，启动内核<h3 id="Tiny-GPU组成部分"><a href="#Tiny-GPU组成部分" class="headerlink" title="Tiny-GPU组成部分"></a>Tiny-GPU组成部分</h3>GPU本身包括以下几个部分：</li>
+<li>设备控制寄存器：保存内核在GPU中的执行方式（例如需要启动的线程数量thread_count）；</li>
+<li>调度器：内核被启动后，调度器管理线程在不同计算核心上的执行。调度器将可以在单个核心上并行执行的线程编排成组（blocks）,并将组发送给活跃的核心处理，等待所有block处理完成；</li>
+<li>多个计算核心：</li>
+<li>数据内存/程序内存的内存控制器：GPU需要和外部内存交互。<ul>
+<li>Global memory：项目的外村标准为：<ul>
+<li>数据内存：8bits寻址，每行8bits数据；</li>
+<li>程序内存：8bits寻址，每行保存16bits的指令（ISA）</li>
+</ul>
+</li>
+<li>内存控制器：全局内存具有固定的读写带宽，实际上多个核心可能同时要求访问内存数据，超过外存的最大读写带宽。内存控制器监控所有来自计算核心的内存访问，根据外存带宽限制请求，并返回外部存储器的相应。每一个内存控制器都有固定大小的通道。</li>
+</ul>
+</li>
+<li>缓存：将核心频繁访问的数据存放到设备SRAM中可加快后续对相同数据的访问速度。</li>
+<li>计算单元—核心（Core）：每个内核有许多计算资源，资源围绕可以支持的线程数量构建，为了最大化并行度，需要对这些计算资源进行优化管理，提高计算资源利用率。在本项目中，每个内核一次处理一个block，对于block中的每个线程，内核都有专用的ALU、LSU、PC以及寄存器。管理内核上的线程指令执行是GPU中最具有挑战的问题之一。<ul>
+<li>核心调度器（Core Scheduler）：每个核心都有一个管理线程执行的调度器。Tiny-GPU的调度器按顺序执行到来的Block，以同步、顺序的方式执行block内所有线程的指令。==在更高级的调度程序中，流水线Pipline被用于流式执行指令。此外，wrap技术可用于并行执行block内的多个线程。==调度器必须考虑外存数据的读写延迟，优化指令执行。</li>
+<li>取指器Fetcher：异步的根据程序计数器从程序外存/缓存中获取指令。</li>
+<li>解码器Decoder：解码读取的指令，获得线程执行的控制信号。</li>
+<li>寄存器Register：每个线程都有独立的寄存器，保存线程当前的计算数据，使SIMD单指令多数据模式得以实现。此外，每个寄存器文件包含一些只读寄存器，保存当前线程的ID以及所属的Block块号，线程根据这些信息可以执行不同的数据。</li>
+<li>ALUs：算数逻辑单元用来处理 ADD、SUB、MUL、DIV、CMP指令。</li>
+<li>LSUs：专用load-store单元访问全局内存，用于处理LDR&amp;STR指令并相应内存控制器等待。</li>
+<li>PCs：专用程序计数器，决定每个线程下一步执行的指令，每次执行完当前指令+1。通过BRnzp指令，比肩NZP计算器的值，如果满足特定条件跳转到指定程序行，实现程序的循环执行和条件分支。Tiny-GPU并行执行所有线程，简单假设所有线程每条指令执行完成后PC计数器值相同。==实际GPU中，线程可以分支到不同的PCs值，使得初始化的多个线程可以独立分散执行。==</li>
+</ul>
+</li>
+</ul>
+<p><img src="https://github.com/adam-maj/tiny-gpu/raw/master/docs/images/isa.png" alt="ISA" style="zoom: 33%;" /></p>
+<ul>
+<li>ISA：Tiny-GPU实现了11指令ISA，可以简单验证矩阵加法和乘法等简单内核执行。<ul>
+<li>BRnzp：如果nzp寄存器满足nzp条件，跳转到程序内存中的指定行。</li>
+<li>CMP：比较两个寄存器的值，并将结果存储在NZP寄存器中，用于后续的BRnzp指令。</li>
+<li>ADD、SUB、MUL、DIV：实现tensor math的基础算数操作。</li>
+<li>LDR：从全局内存中加载数据。</li>
+<li>STR：将数据存储到全局内存中。</li>
+<li>CONST：将常量加载到寄存器中。</li>
+<li>RET：完成信号，表明当前线程执行结束。<br>寄存器通过4bits寻址，即一共有16个寄存器。R0-R12支持自由读写，R13-R15是只读寄存器，用来保存%blockIdx、%blockDim、以及%threadIdx，这三个参数对于SIMD至关重要。</li>
+</ul>
+</li>
+</ul>
+<h3 id="Tiny-GPU-执行"><a href="#Tiny-GPU-执行" class="headerlink" title="Tiny-GPU 执行"></a>Tiny-GPU 执行</h3><h4 id="Core核心"><a href="#Core核心" class="headerlink" title="Core核心"></a>Core核心</h4><p>每个核心通过一系列控制流程执行指令：</p>
+<ul>
+<li>FETCH：根据PC从程序内存中读取下一条指令；</li>
+<li>DECODE：解码指令获得控制信号；</li>
+<li>REQUEST：对于LDR和STR，向全局内存发起读写请求；</li>
+<li>WAIT：等待全局存储器返回数据；</li>
+<li>EXECUTE：对数据执行任意计算操作；</li>
+<li>UPDATE：更新寄存器（包括NZP寄存器）；<br>==实际上，上述的一些步骤可以被压缩执行以节约操作时间，此外也可以通过Pipeline流式处理相邻指令，即当前指令无需等待先前指令完成即可开始执行。==<h4 id="Thread线程执行框图"><a href="#Thread线程执行框图" class="headerlink" title="Thread线程执行框图"></a>Thread线程执行框图</h4><img src="https://github.com/adam-maj/tiny-gpu/raw/master/docs/images/thread.png" alt="Thread" style="zoom: 25%;" /></li>
+</ul>
+<h3 id="内核设计举例"><a href="#内核设计举例" class="headerlink" title="内核设计举例"></a>内核设计举例</h3><p>项目根据提供的指令集，设计了两个1x8的矩阵加法和2x2的矩阵乘法内核，内核通过使用 <code>%blockIdx</code>, <code>%blockDim</code>, and <code>%threadIdx</code> 寄存器展示了GPU的SIMD编程方式。</p>
+<h4 id="矩阵加法："><a href="#矩阵加法：" class="headerlink" title="矩阵加法："></a>矩阵加法：</h4><figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">.threads</span> <span class="number">8</span></span><br><span class="line"><span class="variable">.data</span> <span class="number">0</span> <span class="number">1</span> <span class="number">2</span> <span class="number">3</span> <span class="number">4</span> <span class="number">5</span> <span class="number">6</span> <span class="number">7</span>          ; matrix A (<span class="number">1</span> x <span class="number">8</span>)</span><br><span class="line"><span class="variable">.data</span> <span class="number">0</span> <span class="number">1</span> <span class="number">2</span> <span class="number">3</span> <span class="number">4</span> <span class="number">5</span> <span class="number">6</span> <span class="number">7</span>          ; matrix B (<span class="number">1</span> x <span class="number">8</span>)</span><br><span class="line"></span><br><span class="line">MUL R0, %blockIdx, %blockDim</span><br><span class="line">ADD R0, R0, %threadIdx         ; i = blockIdx * blockDim + threadIdx</span><br><span class="line"></span><br><span class="line">CONST R1, #<span class="number">0</span>                   ; baseA (matrix A base address)</span><br><span class="line">CONST R2, #<span class="number">8</span>                   ; baseB (matrix B base address)</span><br><span class="line">CONST R3, #<span class="number">16</span>                  ; baseC (matrix C base address)</span><br><span class="line"></span><br><span class="line">ADD R4, R1, R0                 ; addr(A[i]) = baseA + i</span><br><span class="line">LDR R4, R4                     ; load A[i] from <span class="keyword">global</span> memory</span><br><span class="line"></span><br><span class="line">ADD R5, R2, R0                 ; addr(B[i]) = baseB + i</span><br><span class="line">LDR R5, R5                     ; load B[i] from <span class="keyword">global</span> memory</span><br><span class="line"></span><br><span class="line">ADD R6, R4, R5                 ; C[i] = A[i] + B[i]</span><br><span class="line"></span><br><span class="line">ADD R7, R3, R0                 ; addr(C[i]) = baseC + i</span><br><span class="line">STR R7, R6                     ; store C[i] in <span class="keyword">global</span> memory</span><br><span class="line"></span><br><span class="line">RET                            ; <span class="keyword">end</span> of kernel</span><br></pre></td></tr></table></figure>
+<h4 id="矩阵乘法："><a href="#矩阵乘法：" class="headerlink" title="矩阵乘法："></a>矩阵乘法：</h4><p>实现2x2的矩阵乘法，对于对应行、列的点乘使用SIMD并且使用CMP和BRznp控制循环跳出。<br><figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">.threads</span> <span class="number">4</span></span><br><span class="line"><span class="variable">.data</span> <span class="number">1</span> <span class="number">2</span> <span class="number">3</span> <span class="number">4</span>                  ; matrix A (<span class="number">2</span> x <span class="number">2</span>)</span><br><span class="line"><span class="variable">.data</span> <span class="number">1</span> <span class="number">2</span> <span class="number">3</span> <span class="number">4</span>                  ; matrix B (<span class="number">2</span> x <span class="number">2</span>)</span><br><span class="line"></span><br><span class="line">MUL R0, %blockIdx, %blockDim</span><br><span class="line">ADD R0, R0, %threadIdx         ; i = blockIdx * blockDim + threadIdx</span><br><span class="line"></span><br><span class="line">CONST R1, #<span class="number">1</span>                   ; increment</span><br><span class="line">CONST R2, #<span class="number">2</span>                   ; N (matrix inner dimension)</span><br><span class="line">CONST R3, #<span class="number">0</span>                   ; baseA (matrix A base address)</span><br><span class="line">CONST R4, #<span class="number">4</span>                   ; baseB (matrix B base address)</span><br><span class="line">CONST R5, #<span class="number">8</span>                   ; baseC (matrix C base address)</span><br><span class="line"></span><br><span class="line">DIV R6, R0, R2                 ; row = i <span class="comment">// N</span></span><br><span class="line">MUL R7, R6, R2</span><br><span class="line">SUB R7, R0, R7                 ; col = i % N</span><br><span class="line"></span><br><span class="line">CONST R8, #<span class="number">0</span>                   ; acc = <span class="number">0</span></span><br><span class="line">CONST R9, #<span class="number">0</span>                   ; k = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">LOOP:</span><br><span class="line">  MUL R10, R6, R2</span><br><span class="line">  ADD R10, R10, R9</span><br><span class="line">  ADD R10, R10, R3             ; addr(A[i]) = row * N + k + baseA</span><br><span class="line">  LDR R10, R10                 ; load A[i] from <span class="keyword">global</span> memory</span><br><span class="line"></span><br><span class="line">  MUL R11, R9, R2</span><br><span class="line">  ADD R11, R11, R7</span><br><span class="line">  ADD R11, R11, R4             ; addr(B[i]) = k * N + col + baseB</span><br><span class="line">  LDR R11, R11                 ; load B[i] from <span class="keyword">global</span> memory</span><br><span class="line"></span><br><span class="line">  MUL R12, R10, R11</span><br><span class="line">  ADD R8, R8, R12              ; acc = acc + A[i] * B[i]</span><br><span class="line"></span><br><span class="line">  ADD R9, R9, R1               ; increment k</span><br><span class="line"></span><br><span class="line">  CMP R9, R2</span><br><span class="line">  BRn LOOP                    ; loop <span class="keyword">while</span> k &lt; N</span><br><span class="line"></span><br><span class="line">ADD R9, R5, R0                 ; addr(C[i]) = baseC + i</span><br><span class="line">STR R9, R8                     ; store C[i] in <span class="keyword">global</span> memory</span><br><span class="line"></span><br><span class="line">RET                            ; <span class="keyword">end</span> of kernel</span><br></pre></td></tr></table></figure></p>
+<h3 id="Tiny-GPU模拟执行"><a href="#Tiny-GPU模拟执行" class="headerlink" title="Tiny-GPU模拟执行"></a>Tiny-GPU模拟执行</h3><p>本地安装<a target="_blank" rel="noopener" href="https://steveicarus.github.io/iverilog/usage/installation.html">iverilog</a> and <a target="_blank" rel="noopener" href="https://docs.cocotb.org/en/stable/install.html">cocotb</a>进行仿真。</p>
+<h3 id="其余扩展模块"><a href="#其余扩展模块" class="headerlink" title="其余扩展模块"></a>其余扩展模块</h3><p>为了简化实现流程，Tiny-GPU省略了现代GPU中的许多优化技术。</p>
+<h4 id="Multi-layered-Cache-amp-Shared-Memory"><a href="#Multi-layered-Cache-amp-Shared-Memory" class="headerlink" title="Multi-layered Cache &amp; Shared Memory"></a>Multi-layered Cache &amp; Shared Memory</h4><p>现代GPU使用多级缓存减少从外部存储器中读取的数据量。Tiny-GPU目前只实现了访存计算单元与存储控制器之间的一级缓存。</p>
+<ul>
+<li>实现多级缓存使得频繁访问的数据被缓存在核心内部；</li>
+<li>实现不同缓存算法，提高缓存命中率；</li>
+<li>同一block内部的多个thread可以访问一段共享内存，用于共享计算结果；<h4 id="Memory-Coalescing"><a href="#Memory-Coalescing" class="headerlink" title="Memory Coalescing"></a>Memory Coalescing</h4>内存访问合并。并行执行的多个线程通常会访问连续内存地址（多个线程访问矩阵的连续元素），但是每一个内存访问都被单独执行。</li>
+<li>通过分析内存请求队列，并且将相邻的访存请求合并成单个事务，降低总的内存请求开销。<h4 id="PIpelining"><a href="#PIpelining" class="headerlink" title="PIpelining"></a>PIpelining</h4>目前Tiny-GPU执行下一条指令需要等待当前指令完成。</li>
+<li>实现多个顺序指令之间的流水执行并保证正确性，帮助提升计算资源利用率。<h4 id="Warp-Scheduling"><a href="#Warp-Scheduling" class="headerlink" title="Warp Scheduling"></a>Warp Scheduling</h4>在GPU中，Warp Scheduler（线程束调度器）模块是一个关键组件，用于协调和调度线程束（warp）的执行。线程束是一组连续的线程，通常有32个线程组成。这些线程在GPU中以并行方式执行相同的指令，称为SIMD（Single Instruction, Multiple Data）执行模型。Warp Scheduler的主要功能是决定哪个线程束将被调度器选择执行，并将它们分配给可用的执行单元（如流处理器）进行计算。Warp Scheduler可以根据多种策略来选择线程束，如轮转（Round-robin）调度、优先级调度或动态调度等。<h4 id="Branch-Divergence"><a href="#Branch-Divergence" class="headerlink" title="Branch Divergence"></a>Branch Divergence</h4>Tiny-GPU假设所有的线程执行完成后PC值相同，因此在线程整个生命周期内都可以并行执行。实际上线程根据自身数据可能跳转到不同代码行。不同PC值的线程引入管理线程分叉和再次合并机制。<h4 id="Synchronization-amp-Barriers"><a href="#Synchronization-amp-Barriers" class="headerlink" title="Synchronization &amp; Barriers"></a>Synchronization &amp; Barriers</h4>现代GPU允许设置barrier使得block内部线程同步执行，即允许所有线程到达指定阶段后继续执行。这对于线程需要相互交换共享数据的情况非常有用，以便确保所有数据得到完全处理。</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://example.com">Smartog</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2024/06/28/Tiny-GPU/">http://example.com/2024/06/28/Tiny-GPU/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">Smartog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/GPU/">GPU</a></div><div class="post_share"><div class="social-share" data-image="https://raw.githubusercontent.com/Smartog/picturebed/master/img-91c6a55525b25b0bc9ed2b3dee91024f.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="/pluginsSrc/butterfly-extsrc/ShareJS/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="/pluginsSrc/butterfly-extsrc/ShareJS/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="https://img-blog.csdnimg.cn/9732abb7d2ec4ba09cba5cf29507e04f.jpeg" target="_blank"><img class="post-qr-code-img" src="https://img-blog.csdnimg.cn/9732abb7d2ec4ba09cba5cf29507e04f.jpeg" alt="微信"/></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="https://img-blog.csdnimg.cn/899038c3a02c4a14925da419444eb3a4.jpeg" target="_blank"><img class="post-qr-code-img" src="https://img-blog.csdnimg.cn/899038c3a02c4a14925da419444eb3a4.jpeg" alt="支付宝"/></a><div class="post-qr-code-desc">支付宝</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2023/07/11/zynq-Vitis-Vivado-CustomIP/"><img class="next-cover" src="https://raw.githubusercontent.com/Smartog/picturebed/master/img-91c6a55525b25b0bc9ed2b3dee91024f.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Vitis Vivado开发自定义IP核流程——以自定义呼吸灯IP核为例</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#Tiny-GPU%E6%9E%B6%E6%9E%84%E5%9B%BE"><span class="toc-number">1.</span> <span class="toc-text">Tiny-GPU架构图</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Tiny-GPU%E5%B7%A5%E4%BD%9C%E6%96%B9%E5%BC%8F"><span class="toc-number">2.</span> <span class="toc-text">Tiny-GPU工作方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Tiny-GPU%E7%BB%84%E6%88%90%E9%83%A8%E5%88%86"><span class="toc-number">3.</span> <span class="toc-text">Tiny-GPU组成部分</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Tiny-GPU-%E6%89%A7%E8%A1%8C"><span class="toc-number">4.</span> <span class="toc-text">Tiny-GPU 执行</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Core%E6%A0%B8%E5%BF%83"><span class="toc-number">4.1.</span> <span class="toc-text">Core核心</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Thread%E7%BA%BF%E7%A8%8B%E6%89%A7%E8%A1%8C%E6%A1%86%E5%9B%BE"><span class="toc-number">4.2.</span> <span class="toc-text">Thread线程执行框图</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E6%A0%B8%E8%AE%BE%E8%AE%A1%E4%B8%BE%E4%BE%8B"><span class="toc-number">5.</span> <span class="toc-text">内核设计举例</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%9F%A9%E9%98%B5%E5%8A%A0%E6%B3%95%EF%BC%9A"><span class="toc-number">5.1.</span> <span class="toc-text">矩阵加法：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%9F%A9%E9%98%B5%E4%B9%98%E6%B3%95%EF%BC%9A"><span class="toc-number">5.2.</span> <span class="toc-text">矩阵乘法：</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Tiny-GPU%E6%A8%A1%E6%8B%9F%E6%89%A7%E8%A1%8C"><span class="toc-number">6.</span> <span class="toc-text">Tiny-GPU模拟执行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B6%E4%BD%99%E6%89%A9%E5%B1%95%E6%A8%A1%E5%9D%97"><span class="toc-number">7.</span> <span class="toc-text">其余扩展模块</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Multi-layered-Cache-amp-Shared-Memory"><span class="toc-number">7.1.</span> <span class="toc-text">Multi-layered Cache &amp; Shared Memory</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Memory-Coalescing"><span class="toc-number">7.2.</span> <span class="toc-text">Memory Coalescing</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#PIpelining"><span class="toc-number">7.3.</span> <span class="toc-text">PIpelining</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Warp-Scheduling"><span class="toc-number">7.4.</span> <span class="toc-text">Warp Scheduling</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Branch-Divergence"><span class="toc-number">7.5.</span> <span class="toc-text">Branch Divergence</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Synchronization-amp-Barriers"><span class="toc-number">7.6.</span> <span class="toc-text">Synchronization &amp; Barriers</span></a></li></ol></li></ol></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2022 - 2024 By Smartog</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi, welcome to my <a target="_blank" rel="noopener" href="https://butterfly.js.org/">blog</a>!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="/pluginsSrc/medium-zoom/dist/medium-zoom.min.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.2
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, ''],
+        insertScript: [200, () => {
+          document.querySelectorAll('mjx-container:not\([display]\)').forEach(node => {
+            const target = node.parentNode
+            if (target.nodeName.toLowerCase() === 'li') {
+              target.parentNode.classList.add('has-jax')
+            } else {
+              target.classList.add('has-jax')
+            }
+          });
+        }, '', false]
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = '/pluginsSrc/mathjax/es5/tex-mml-chtml.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typeset()
+}</script></div><canvas class="fireworks" mobile="false"></canvas><script src="/pluginsSrc/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="ribbon" src="/pluginsSrc/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
